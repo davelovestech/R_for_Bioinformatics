@@ -1,3 +1,11 @@
+---
+title: "DNA_Sequence_Statistics_1"
+author: "Dave_Halvorsen"
+date: "August 7, 2018"
+output: html_document
+---
+
+```{r}
 getncbiseq <- function(accession)
 {
   require("seqinr") # this function requires the SeqinR R package
@@ -24,4 +32,9 @@ getncbiseq <- function(accession)
   }
   print(paste("ERROR: accession",accession,"was not found"))
 }
+```
+
+```{r}
 dengueseq <- getncbiseq("NC_001477")
+```
+
