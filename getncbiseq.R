@@ -12,7 +12,6 @@
 #   o Check that your are connected to the internet.
 #   o Check that port 5558 is not closed by a firewall.
 #   o Try to increase timeout value (current is 5 seconds).
-
 # My OS is Ubuntu 16.04. I tried updating the original timeout=5 to timeout=120.
 # I tried 'sudo ufw allow 5558' and no change.  
 # tried 'sudo iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 5558 -j ACCEPT
@@ -26,7 +25,7 @@ getncbiseq <- function(accession)
   for (i in 1:numdbs)
   {
     db <- dbs[i]
-    choosebank(db, timeout=120)
+    choosebank(db, timeout=55)
     # check if the sequence is in ACNUC database 'db':
     resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
     if (!(inherits(resquery, "try-error")))
@@ -44,3 +43,5 @@ getncbiseq <- function(accession)
   print(paste("ERROR: accession",accession,"was not found"))
 }
 dengueseq <- getncbiseq("NC_001477")
+
+
