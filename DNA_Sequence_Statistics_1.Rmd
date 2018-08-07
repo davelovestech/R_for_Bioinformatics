@@ -4,6 +4,27 @@ author: "Dave_Halvorsen"
 date: "August 7, 2018"
 output: html_document
 ---
+This is my attempt at getting the provided code to work.
+```{r}
+# I am working on the 'Retrieving genome sequence data using SeqinR' section from 
+# page 15 (PDF page 19) of 'A Little Book of R for Bioinformatics, Release 0.1'.
+
+# This is the error message I get when I run the code (below)
+# Error in socketConnection(host = host, port = port, server = server, blocking = blocking,  : 
+# cannot open the connection
+# In addition: Warning message:
+# In socketConnection(host = host, port = port, server = server, blocking = blocking,  :
+# pbil.univ-lyon1.fr:5558 cannot be opened
+# Error in choosebank(db, timeout = 120) : 
+# I wasn't able to open the socket connection:
+#   o Check that your are connected to the internet.
+#   o Check that port 5558 is not closed by a firewall.
+#   o Try to increase timeout value (current is 5 seconds).
+# My OS is Ubuntu 16.04. I tried updating the original timeout=5 to timeout=120.
+# I tried 'sudo ufw allow 5558' and no change.  
+# tried 'sudo iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 5558 -j ACCEPT
+```
+
 
 ```{r}
 getncbiseq <- function(accession)
@@ -15,7 +36,7 @@ getncbiseq <- function(accession)
   for (i in 1:numdbs)
   {
     db <- dbs[i]
-    choosebank(db, timeout=5)
+    choosebank(db, timeout=60, host = "pbil.univ-lyon1.fr", port = 5559)
     # check if the sequence is in ACNUC database 'db':
     resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
     if (!(inherits(resquery, "try-error")))
@@ -37,4 +58,86 @@ getncbiseq <- function(accession)
 ```{r}
 dengueseq <- getncbiseq("NC_001477")
 ```
+^ That code wasn't working, so I've skipped that section and just grabbed the sequence from NCBI. Here's reading in the fasta file:
+```{r}
+# note that 'system.file' was returning an error about the .fasta file *NOT* starting with a '>' character. Getting rid of 'system' from 'system.file' fixed the problem. 
+dengueseq <- read.fasta(file = file("/media/david/Linux/R_for_Bioinformatics/DEN1.fasta"))
+typeof(dengueseq)
+dengueseq
+# length is 1 ... cause it's a character type?
+length(dengueseq)
+# the tutorial calls for writing out a fasta file with the write.fasta function LATER than my usage of it here. However, because my way is a list instead of a vector
+# I'll try out write.fasta with the initial version.
+write.fasta(names="DEN-1", sequence=dengueseq, file.out="DEN-1-write-fasta-function")
+```
+
+```{r}
+# my version of dengueseq (from NCBI download & fasta readin) is a list, BUT the tutorial's is a vector
+typeof(dengueseq)
+# list slicing must not work the same as vector slicing
+dengueseq[c(1, 50)]
+```
+
+```{r}
+# trying to convert dengueseq list into a vector (https://stat.ethz.ch/R-manual/R-devel/library/base/html/unlist.html)
+vector_dengueseq <- unlist(dengueseq, recursive = FALSE, use.names = FALSE)
+# however, it's listed as a "character"
+typeof(vector_dengueseq)
+# so I'm renaming it to dengue
+dengue <- vector_dengueseq
+# here are indices 1-50 of dengue
+dengue[1:50]
+```
+
+```{r}
+# length doesn't work ... probably because the type of my version is character
+length(dengueseq)
+# why is the length given as 53782 instead of 10735? 10735 + 10735*2 = 32205
+# nchar(dengueseq)
+# library(stringr)
+# str_length(dengueseq)
+# lengths works
+lengths(dengueseq)
+# here's the table
+table(dengueseq)
+```
+calcuating GC content of Dengue virus
+```{r}
+(2240+2770)*100/(3426+2240+2770+2299)
+# alternatively, SeqinR GC() function will do the same
+# BUT, my dengueseq is not a vector of chars, so I get an error
+GC(dengueseq)
+```
+can I create a vector of chars?
+```{r}
+# I can't get this to work ... :/
+x <- c(dengueseq)
+typeof(x)
+```
+
+```{r}
+# this doesn't work like the text ... again, it's probably because I'm working with a list of characters instead of a vector of characters
+count(dengueseq, 1)
+count(dengueseq, 2)
+denguetable <- count(dengueseq,1)
+denguetable[["g"]]
+```
+
+exercises from the first chapter
+```{r}
+# Q1. What are the last twenty nucleotides of the Dengue virus genome sequence?
+
+# Q2. What is the length in nucleotides of the genome sequence for the bacterium Mycobacterium leprae strain TN?
+
+# Q3. How many of each of the four nucleotides A, C, T, and G, and any other symbols, are there in the Mycobacterium leprae
+
+# Q4. What is the GC content of the Mycobacterium leprae TN genome sequence, when i
+```
+
+I couldn't get it work. However, I did find some others who improvised some exercises:
+https://github.com/haruosuz/r4bioinfo/tree/master/R_seqinR#exercise-1
+https://github.com/haruosuz/r4bioinfo/tree/master/R_Avril_Coghlan#dna-sequence-statistics-1
+https://rstudio-pubs-static.s3.amazonaws.com/73927_60e9fb345d9d4175b8994b1ff1eff2e2.html
+
+
 
