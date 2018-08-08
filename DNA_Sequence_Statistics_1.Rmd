@@ -36,7 +36,7 @@ getncbiseq <- function(accession)
   for (i in 1:numdbs)
   {
     db <- dbs[i]
-    choosebank(db, timeout=60, host = "pbil.univ-lyon1.fr", port = 5559)
+    choosebank(db, timeout=60, host = "pbil.univ-lyon1.fr", port = 5558)
     # check if the sequence is in ACNUC database 'db':
     resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
     if (!(inherits(resquery, "try-error")))
