@@ -95,6 +95,7 @@ dengueseq <- getncbiseq("NC_001477")
 ```
 refactored code suggestion from Stack Overflow: https://stackoverflow.com/questions/37856007/error-with-a-function-to-retrieve-data-from-a-database
 Also, I changed it to start at 3 (see above)
+COMEBACK HERE!!!! I CHANGED THIS TO START AT 1
 ```{r}
 getncbiseq <- function(accession)
 {
@@ -102,7 +103,7 @@ require("seqinr") # this function requires the SeqinR R package
 # first find which ACNUC database the accession is stored in:
 dbs <- c("genbank","refseq","refseqViruses","bacterial")
 numdbs <- length(dbs)
-for (i in 3:numdbs)
+for (i in 1:numdbs)
 {
 db <- dbs[i]
 choosebank(db)
@@ -122,7 +123,12 @@ closebank()
 }
 print(paste("ERROR: accession",accession,"was not found"))
 }
+
+```
+
+```{r}
 getncbi_dengueseq <- getncbiseq("NC_001477")
+getncbi_dengueseq
 ```
 
 ```{r}
@@ -140,6 +146,7 @@ write.fasta(names="ncbiDEN-1", sequences=getncbi_dengueseq, file.out="ncbi_den1.
 ```
 reading in a fasta file (the file from above)
 ```{r}
+require('seqinr')
 read_dengue <- read.fasta(file="/media/david/Linux/R_for_Bioinformatics/ncbi_den1.fasta")
 ```
 
@@ -177,13 +184,112 @@ dengue_count_1[["g"]]
 exercises from the first chapter
 ```{r}
 # Q1. What are the last twenty nucleotides of the Dengue virus genome sequence?
-
-# Q2. What is the length in nucleotides of the genome sequence for the bacterium Mycobacterium leprae strain TN?
-
-# Q3. How many of each of the four nucleotides A, C, T, and G, and any other symbols, are there in the Mycobacterium leprae
-
-# Q4. What is the GC content of the Mycobacterium leprae TN genome sequence, when i
+# this is just the letters
+# read_dengue[[1]]
+# it's 10735 long
+# length(read_dengue[[1]])
+# I confirmed this answer by comparing to the actual .fasta file
+# it's -19, not -20 because 10735 index is the 20th value ... dummie
+read_dengue[[1]][(10735-19):10735]
 ```
+
+```{r}
+# Q2. What is the length in nucleotides of the genome sequence for the bacterium Mycobacterium leprae strain TN (accession NC_002677)?
+# bacterial database is offline as of aug 8 139 pm ... tryin others
+# getncbi_lepraeseq <- getncbiseq("NC_002677")
+where.is.this.acc("NC_002677", stopAtFirst = FALSE)
+# Sequence with accesion number NC_002677 was found in the following database(s):
+#[1] "hogenomdna"
+```
+# changing getncbiseq function to look in "hogenomdna"
+```{r}
+gethogenomdnaseq <- function(accession)
+{
+require("seqinr") # this function requires the SeqinR R package
+# first find which ACNUC database the accession is stored in:
+dbs <- c("hogenomdna", "genbank","refseq","refseqViruses","bacterial")
+numdbs <- length(dbs)
+for (i in 1:numdbs)
+{
+db <- dbs[i]
+choosebank(db)
+# check if the sequence is in ACNUC database 'db':
+resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
+
+if (!(inherits(resquery, "try-error"))) {
+  queryname <- "query2"
+  thequery <- paste("AC=", accession, sep="")
+  query2 <- query(queryname, thequery)
+  # see if a sequence was retrieved:
+  seq <- getSequence(query2$req[[1]])
+  closebank()
+  return(seq)
+}
+closebank()
+}
+print(paste("ERROR: accession",accession,"was not found"))
+}
+```
+
+```{r}
+lepraeseq <- gethogenomdnaseq("NC_002677")
+# got it!
+lepraeseq
+length(lepraeseq)
+```
+
+```{r}
+# Q3. How many of each of the four nucleotides A, C, T and G, and any other symbols, are there in the Mycobacterium leprae TN genome sequence?
+table(lepraeseq)
+```
+
+```{r}
+# Q4. What is the GC content of the Mycobacterium leprae TN genome sequence, when (i) all non-A/C/T/G nucleotides are included, (ii) non-A/C/T/G nucleotides are discarded?
+GC(lepraeseq)
+# 'help("GC")' gets info on how to look for non-A/T/C/G nucleotides
+GC(lepraeseq, exact=FALSE)
+# to take non-A/C/T/G nucleotides into account, set exact=TRUE
+GC(lepraeseq, exact=TRUE)
+```
+
+```{r}
+# Q5. How many of each of the four nucleotides A, C, T and G are there in the complement of the Mycobacterium leprae TN genome sequence?
+
+```
+
+```{r}
+# Q6. How many occurrences of the DNA words CC, CG and GC occur in the Mycobacterium leprae TN genome sequence?
+```
+
+```{r}
+# Q7. How many occurrences of the DNA words CC, CG and GC occur in the (i) first 1000 and (ii) last 1000 nucleotides of the Mycobacterium leprae TN genome sequence?
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Here's more stuff on seqinr that I planned to do if I couldn't get the main exercises to work ... no need to do it now! However, I did find some others who improvised some exercises:
 https://github.com/haruosuz/r4bioinfo/tree/master/R_seqinR#exercise-1
