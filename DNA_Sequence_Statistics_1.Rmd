@@ -58,69 +58,120 @@ getncbiseq <- function(accession)
 ```{r}
 dengueseq <- getncbiseq("NC_001477")
 ```
-^ That code wasn't working, so I've skipped that section and just grabbed the sequence from NCBI. Here's reading in the fasta file:
+8/7/2017 ^ That code wasn't working, so I've skipped that section and just grabbed the sequence from NCBI. SKIP AHEAD to "Here's reading in the fasta file:". See email from Jean Lobry for more info ... they restarted teh server cause kit had problmes
 ```{r}
-# note that 'system.file' was returning an error about the .fasta file *NOT* starting with a '>' character. Getting rid of 'system' from 'system.file' fixed the problem. 
-dengueseq <- read.fasta(file = file("/media/david/Linux/R_for_Bioinformatics/DEN1.fasta"))
-typeof(dengueseq)
-dengueseq
-# length is 1 ... cause it's a character type?
-length(dengueseq)
-# the tutorial calls for writing out a fasta file with the write.fasta function LATER than my usage of it here. However, because my way is a list instead of a vector
-# I'll try out write.fasta with the initial version.
-write.fasta(names="DEN-1", sequence=dengueseq, file.out="DEN-1-write-fasta-function")
+where.is.this.acc("NC_001477", stopAtFirst = FALSE)
+```
+CHANGING CODE! STARTING FOR LOOP AT 3 BECAUSE "refseqViruses" is where it's stored! :D
+```{r}
+getncbiseq <- function(accession)
+{
+  require("seqinr") # this function requires the SeqinR R package
+  # first find which ACNUC database the accession is stored in:
+  dbs <- c("genbank","regseq","refseqViruses","bacterial")
+  numdbs <- length(dbs)
+  for (i in 3:numdbs)
+  {
+    db <- dbs[i]
+    choosebank(db, timeout=60, host = "pbil.univ-lyon1.fr", port = 5558)
+    # check if the sequence is in ACNUC database 'db':
+    resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
+    if (!(inherits(resquery, "try-error")))
+    {
+      queryname <- "query2"
+      thequery <- paste("AC=",accession,sep="")
+      query('queryname','thequery')
+      # see if a sequence was retrieved:
+      seq <- getSequence(query2$req[[1]])
+      closebank()
+      return(seq)
+    }
+    closebank()
+  }
+  print(paste("ERROR: accession",accession,"was not found"))
+  
+}
+dengueseq <- getncbiseq("NC_001477")
+```
+refactored code suggestion from Stack Overflow: https://stackoverflow.com/questions/37856007/error-with-a-function-to-retrieve-data-from-a-database
+Also, I changed it to start at 3 (see above)
+```{r}
+getncbiseq <- function(accession)
+{
+require("seqinr") # this function requires the SeqinR R package
+# first find which ACNUC database the accession is stored in:
+dbs <- c("genbank","refseq","refseqViruses","bacterial")
+numdbs <- length(dbs)
+for (i in 3:numdbs)
+{
+db <- dbs[i]
+choosebank(db)
+# check if the sequence is in ACNUC database 'db':
+resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
+
+if (!(inherits(resquery, "try-error"))) {
+  queryname <- "query2"
+  thequery <- paste("AC=", accession, sep="")
+  query2 <- query(queryname, thequery)
+  # see if a sequence was retrieved:
+  seq <- getSequence(query2$req[[1]])
+  closebank()
+  return(seq)
+}
+closebank()
+}
+print(paste("ERROR: accession",accession,"was not found"))
+}
+getncbi_dengueseq <- getncbiseq("NC_001477")
 ```
 
 ```{r}
-# my version of dengueseq (from NCBI download & fasta readin) is a list, BUT the tutorial's is a vector
-typeof(dengueseq)
-# list slicing must not work the same as vector slicing
-dengueseq[c(1, 50)]
+# still of type character
+typeof(getncbi_dengueseq)
+getncbi_dengueseq
+```
+Awesome! It works now :)
+```{r}
+getncbi_dengueseq[1:50]
+```
+writing out a fasta file
+```{r}
+write.fasta(names="ncbiDEN-1", sequences=getncbi_dengueseq, file.out="ncbi_den1.fasta")
+```
+reading in a fasta file (the file from above)
+```{r}
+read_dengue <- read.fasta(file="/media/david/Linux/R_for_Bioinformatics/ncbi_den1.fasta")
 ```
 
 ```{r}
-# trying to convert dengueseq list into a vector (https://stat.ethz.ch/R-manual/R-devel/library/base/html/unlist.html)
-vector_dengueseq <- unlist(dengueseq, recursive = FALSE, use.names = FALSE)
-# however, it's listed as a "character"
-typeof(vector_dengueseq)
-# so I'm renaming it to dengue
-dengue <- vector_dengueseq
-# here are indices 1-50 of dengue
-dengue[1:50]
+# this is the WHOLE FILE
+read_dengue
+dengue_sequence <- read_dengue[[1]]
+# this is just the sequence!
+dengue_sequence
 ```
 
 ```{r}
-# length doesn't work ... probably because the type of my version is character
-length(dengueseq)
-# why is the length given as 53782 instead of 10735? 10735 + 10735*2 = 32205
-# nchar(dengueseq)
-# library(stringr)
-# str_length(dengueseq)
-# lengths works
-lengths(dengueseq)
-# here's the table
-table(dengueseq)
-```
-calcuating GC content of Dengue virus
-```{r}
-(2240+2770)*100/(3426+2240+2770+2299)
-# alternatively, SeqinR GC() function will do the same
-# BUT, my dengueseq is not a vector of chars, so I get an error
-GC(dengueseq)
-```
-can I create a vector of chars?
-```{r}
-# I can't get this to work ... :/
-x <- c(dengueseq)
-typeof(x)
+# this is the length of the dengue sequence
+length(dengue_sequence)
+# this is the # of different nucleotides
+table(dengue_sequence)
+# what is the GC content?
+100*(2240+2770)/(2240+2770+3426+2299)
+# alternatively, there's a function to do that:
+GC(dengue_sequence)
 ```
 
 ```{r}
-# this doesn't work like the text ... again, it's probably because I'm working with a list of characters instead of a vector of characters
-count(dengueseq, 1)
-count(dengueseq, 2)
-denguetable <- count(dengueseq,1)
-denguetable[["g"]]
+# here's how to get the frequencies of longer words (1 is the same as regular GC() function)
+count(dengue_sequence, 1)
+count(dengue_sequence, 2)
+count(dengue_sequence, 3)
+# The output of count is a table object, so you can use [[]] to grab singular values
+count(dengue_sequence, 1)[[3]]
+# if you store the cout function as a variable, you can grab items by name:
+dengue_count_1 <- count(dengue_sequence, 1)
+dengue_count_1[["g"]]
 ```
 
 exercises from the first chapter
@@ -134,7 +185,7 @@ exercises from the first chapter
 # Q4. What is the GC content of the Mycobacterium leprae TN genome sequence, when i
 ```
 
-I couldn't get it work. However, I did find some others who improvised some exercises:
+Here's more stuff on seqinr that I planned to do if I couldn't get the main exercises to work ... no need to do it now! However, I did find some others who improvised some exercises:
 https://github.com/haruosuz/r4bioinfo/tree/master/R_seqinR#exercise-1
 https://github.com/haruosuz/r4bioinfo/tree/master/R_Avril_Coghlan#dna-sequence-statistics-1
 https://rstudio-pubs-static.s3.amazonaws.com/73927_60e9fb345d9d4175b8994b1ff1eff2e2.html
