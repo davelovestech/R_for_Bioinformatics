@@ -103,7 +103,7 @@ require("seqinr") # this function requires the SeqinR R package
 # first find which ACNUC database the accession is stored in:
 dbs <- c("genbank","refseq","refseqViruses","bacterial")
 numdbs <- length(dbs)
-for (i in 1:numdbs)
+for (i in 3:numdbs)
 {
 db <- dbs[i]
 choosebank(db)
@@ -171,6 +171,8 @@ GC(dengue_sequence)
 
 ```{r}
 # here's how to get the frequencies of longer words (1 is the same as regular GC() function)
+typeof(dengue_sequence)
+dengue_sequence
 count(dengue_sequence, 1)
 count(dengue_sequence, 2)
 count(dengue_sequence, 3)
@@ -254,15 +256,34 @@ GC(lepraeseq, exact=TRUE)
 
 ```{r}
 # Q5. How many of each of the four nucleotides A, C, T and G are there in the complement of the Mycobacterium leprae TN genome sequence?
-
+# this method is cheap ... I'll just do it manually. There's probably a function for this doe
+# 687041 A -> 687041 T
+# 938713 C -> 938713 G
+# 950202 G -> 950202 C
+# 692247 T -> 692247 A
+table(lepraeseq)
+# 687041, T 938713, G 950202, C 692247 A
+count(comp(lepraeseq), 1)
 ```
 
 ```{r}
 # Q6. How many occurrences of the DNA words CC, CG and GC occur in the Mycobacterium leprae TN genome sequence?
+#lepraeseq
+typeof(lepraeseq)
+#tolower(lepraeseq)
+count(tolower(lepraeseq), 2)
 ```
 
 ```{r}
 # Q7. How many occurrences of the DNA words CC, CG and GC occur in the (i) first 1000 and (ii) last 1000 nucleotides of the Mycobacterium leprae TN genome sequence?
+lower_lepraeseq <- tolower(lepraeseq)
+# lower_lepraeseq
+first_1000_lower_lepraeseq <- lower_lepraeseq[1:1000]
+last_1000_lower_lepraeseq <- lower_lepraeseq[(length(lower_lepraeseq)-999):length(lower_lepraeseq)]
+length(first_1000_lower_lepraeseq)
+count(first_1000_lower_lepraeseq, 2)
+length(last_1000_lower_lepraeseq)
+count(last_1000_lower_lepraeseq, 2)
 ```
 
 
