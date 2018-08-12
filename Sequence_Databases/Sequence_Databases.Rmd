@@ -1,0 +1,199 @@
+---
+title: "Sequence_Databases"
+author: "Dave_Halvorsen"
+date: "August 12, 2018"
+output: html_document
+---
+
+```{r}
+# this'll show a list of all the databases I can access with seqinr
+library("seqinr")
+# the choosebank() code was causing a problem downstream, so it's commented out
+# choosebank()
+```
+
+```{r}
+# the book calls for all of this to be run, BUT I'm concerned it'll
+# interfere with further steps, so I've commented it out
+# specify we want to search the 'genbank' ACNUC sub-database
+# choosebank("genbank")
+# specify a search for 'refseq'
+# choosebank('refseq') 
+# queries need a name and type
+# query("RefSeqBact", "SP=Bacteria")
+# you need to finally close the database
+# closebank()
+# 3 step review: use "choosebank()" to select sub-database, 
+# use "query()" to query, and 3rd use "closebank()"
+```
+
+```{r}
+# search for DEN-1 virus genome
+choosebank("refseqViruses")
+# TYPO IN THE BOOK! it just list query onwards w/o the variable 
+# and that doesn't work. This does:
+Dengue1 <- query("Dengue1", "AC=NC_001477")
+attributes(Dengue1)
+# to get an objects attributes add $attribute to the object
+Dengue1$nelem
+# to get accession #
+Dengue1$req
+# get names, class
+attr(Dengue1, "names")
+attr(Dengue1, "class")
+# this calls forth for the sequence data
+dengueseq <- getSequence(Dengue1$req[[1]])
+# first 50 elements
+dengueseq[1:50]
+# getting annotations
+annots <- getAnnot(Dengue1$req[[1]])
+# getting first 20 lines of annots
+annots[1:20]
+# close the database when you're done
+closebank()
+```
+
+```{r}
+# finding the sequences published in Nature 460:352-358
+# DOES NOT WORK. Page 43 (PDF 47), so i've commented it out. Error is
+# Error in query("naturepaper", "R=Nature/460/352") : invalid request:"unknown reference at (^): \"R
+# Two examples of other's who've failed
+# https://www.biostars.org/p/197312/#332392
+# http://lists.r-forge.r-project.org/pipermail/seqinr-forum/2017q3/000252.html
+# ^above forum suggests the Nature paper in question might not exist ... 
+# specifying we want genbank
+# choosebank("genbank")
+# search criteria for Nature
+# query('naturepaper', 'R=Nature/460/352')
+# naturepaper$nelem
+```
+
+```{r}
+# trying my version ... 
+# couldn't get it to work, so I've commented it out
+# even the query help page example of 'JMB/13/5432' doesn't work!
+# naturepaper <- query('naturepaper', 'R=JMB/13/5432')
+# I get this error message with this normal seeming request
+# Error in query("naturepaper", "j=Nature", "Y=2006") : argument socket = Y=2006 
+# is not a socket connection.
+# naturepaper <- query('naturepaper', 'j=Nature', 'Y=2006')
+# naturepaper$nelem
+
+# I've repliacted the functional Dengue1 code from above
+choosebank("refseqViruses")
+dengue_attempt <- query("Dengue1", 'AC=NC_001477')
+closebank()
+```
+
+```{r}
+# the suggested code from page 44 (PDF 48) doesn't work either. Error:
+# Error in getSequence(humtRNAs) : object 'humtRNAs' not found
+# I'm growing tired of all this dysfunctional code. The Rosalind.info
+# site may be a better usage of my time than fumbling through this mess
+# choosebank("genbank")
+# query("humtRNAs", "SP=homo sapiens AND M=TRNA")
+# myseqs <- getSequence(humtRNAs)
+# mynames <- getName(humtRNAs)
+# write.fasta(myseqs, mynames, file.out="humantRNAs.fasta")
+# closebank()
+```
+# Q1 What information about the rabies virus sequence (NCBI accession NC_001542) can you obtain from its annotations in the NCBI Sequence Database?
+```{r}
+# go to http://www.ncbi.nlm.nih.gov/
+# use accession 'NC_001542' to find the rabies virus. 
+# since it's a virus, it'll be in 'refseqViruses'. Use the query format to grab it.
+# load the required package
+library("seqinr")   
+# select the virus database
+choosebank("refseqViruses")
+# specify the query
+rabies <- query("rabies", "AC=NC_001542")
+# retrieve the annotations
+annots <- getAnnot(rabies$req[[1]])
+annots[1:20]
+closebank()
+```
+# Q2 How many nucleotide sequences are there from the bacterium Chlamydia trachomatis in the NCBI Sequence Database?
+```{r}
+library("seqinr")
+# selecting genbank for the searching
+choosebank("genbank")
+Ctrachomatis <- query("Ctrachomatis", "SP=Chlamydia trachomatis")
+Ctrachomatis$nelem
+closebank()
+```
+#Q3 How many nucleotide sequences are there from the bacterium Chlamydia trachomatis in the RefSeq part of the NCBI Sequence Database?
+```{r}
+library("seqinr")
+# looking in refseq
+choosebank("refseq")
+Ctrachomatis2 <- query("Ctrachomatis2", "SP=Chlamydia trachomatis")
+Ctrachomatis2$nelem
+closebank()
+# looking in bacterial
+# NVM, it's off for maintenance ... commenting out
+# choosebank("bacterial")
+# Ctrachomatis2 <- query("Ctrachomatis2", "SP=Chlamydia trachomatis")
+# Ctrachomatis2$nelem
+# closebank()
+```
+# Q4 How many nucleotide sequences were submitted to NCBI by Matthew Berriman?
+```{r}
+library("seqinr")
+choosebank("genbank")
+mberriman <- query("mberriman", "AU=Berriman")
+mberriman$nelem
+closebank()
+```
+# Q5 How many nucleotide sequences from the nematode worms are there in the RefSeq Database?
+```{r}
+library("seqinr")
+choosebank("refseq")
+nematodes <- query("nematodes", "SP=Nematoda")
+nematodes$nelem
+closebank()
+```
+# Q6 How many nucleotide sequences for collagen genes from nematode worms are there in the NCBI Database?
+```{r}
+library("seqinr")
+choosebank("genbank")
+collagen <- query("collagen", "SP=Nematoda AND K=collagen")
+collagen$nelem
+closebank()
+```
+# Q7 How many mRNA sequences for collagen genes from nematode worms are there in the NCBI Database?
+```{r}
+library("seqinr")
+choosebank("genbank")
+collagen2 <- query("collagen2", "SP=Nematoda AND K=collagen AND M=mRNA")
+collagen2$nelem
+closebank()
+```
+# Q8 How many protein sequences for collagen proteins from nematode worms are there in the NCBI database?
+```{r}
+# need to search ncbi.nlm.nih.gov website for "Nematoda[ORGN] AND collagen"
+# result: 1 to 20 of 5563 Found 12361 nucleotide sequences. Nucleotide (5563) EST (6798)
+# there isn't an ACNUC database for this
+```
+# Q9 What is the accession number for the Trypanosoma cruzi genome in NCBI?
+```{r}
+# go to ncbi.nlm.nih.gov and search '"Trypanosoma cruzi"[ORGN]'
+# accession is NZ_AAHK00000000.1
+```
+# Q10 How many fully sequenced nematode worm species are represented in the NCBI Genome database?
+```{r}
+# ncbi Genome search term 'Nematoda[ORGN]'
+# 1 to 20 of 102
+```
+
+
+
+
+
+
+
+
+
+
+
+
