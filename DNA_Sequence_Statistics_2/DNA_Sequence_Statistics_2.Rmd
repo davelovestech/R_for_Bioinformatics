@@ -1,0 +1,127 @@
+---
+title: "DNA_Sequence_Statistics_2"
+author: "David_Halvorsen"
+date: "August 9, 2018"
+output: html_document
+---
+
+```{r}
+# What's the logbase10 of 100?
+x <- 100
+log10(x)
+# What's the mean of myvector?
+myvector <- c(30,16,303,99,11,111)
+mean(myvector)
+```
+
+```{r}
+# extracting a single element from myvector
+myvector[3]
+```
+
+```{r}
+# how to create a sequence of numbers
+seq(1, 100, by = 1)
+# changing the 'by' argument from 1 -> 2
+seq(1, 100, by = 2)
+```
+
+```{r}
+# using a for loop to print out the square of each number from 1 to 10
+for (i in 1:10) { print (i*i) }
+```
+
+```{r}
+# using a for loop to print the square of each item in a vector
+avector <- c(2, 9, 100, 133)
+for (i in avector) { print (i*i) }
+```
+
+```{r}
+# use a for loop to print out the square of every *SECOND* number between 1 and 10?
+for (i in seq(1, 10, by = 2)) { print (i*i) }
+```
+
+```{r}
+# plotting myvector2 and a function of myvector1
+myvector1 <- c(10, 15, 22, 35, 43)
+myvector2 <- c(3, 3.2, 3.9, 4.1, 5.2)
+plot(myvector1, myvector2, xlab="myvector1", ylab="myvector2")
+```
+
+```{r}
+# adding a type=b argument will draw a line between each point
+plot(myvector1, myvector2, xlab="myvector1", ylab="myvector2", type="b")
+```
+
+```{r}
+# creating a function that returns 20 plus the square of the input
+myfunction <- function(x) { return(20 + (x*x)) }
+# testing out that function with two inputs
+myfunction(10)
+myfunction(25)
+# printing the entirety of the function
+myfunction
+# finds the log to the base 10 of variable x
+x <- 100
+log10(x)
+
+```
+
+```{r}
+# reading in a fasta file and selecting JUST the nucleotides
+library("seqinr")
+dengue <- read.fasta(file="den1.fasta")
+dengueseq <- dengue[[1]]
+# extracting a subsequence
+dengueseq[452:535]
+```
+
+```{r}
+# what's the GC content of the dengue?
+GC(dengueseq)
+```
+
+```{r}
+# how do I get a rolling window of GC content?
+# length is 10735
+length(dengueseq)
+GC(dengueseq[1:2000])
+GC(dengueseq[2001:4000])
+GC(dengueseq[4001:6000])
+GC(dengueseq[6001:8000])
+GC(dengueseq[8001:10000])
+GC(dengueseq[10001:10735])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
