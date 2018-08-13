@@ -1,0 +1,558 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Sequence\_Databases},
+            pdfauthor={Dave\_Halvorsen},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Sequence\_Databases}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Dave\_Halvorsen}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{August 12, 2018}
+
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# this'll show a list of all the databases I can access with seqinr}
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\CommentTok{# the choosebank() code was causing a problem downstream, so it's commented out}
+\CommentTok{# choosebank()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# the book calls for all of this to be run, BUT I'm concerned it'll}
+\CommentTok{# interfere with further steps, so I've commented it out}
+\CommentTok{# specify we want to search the 'genbank' ACNUC sub-database}
+\CommentTok{# choosebank("genbank")}
+\CommentTok{# specify a search for 'refseq'}
+\CommentTok{# choosebank('refseq') }
+\CommentTok{# queries need a name and type}
+\CommentTok{# query("RefSeqBact", "SP=Bacteria")}
+\CommentTok{# you need to finally close the database}
+\CommentTok{# closebank()}
+\CommentTok{# 3 step review: use "choosebank()" to select sub-database, }
+\CommentTok{# use "query()" to query, and 3rd use "closebank()"}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# search for DEN-1 virus genome}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"refseqViruses"}\NormalTok{)}
+\CommentTok{# TYPO IN THE BOOK! it just list query onwards w/o the variable }
+\CommentTok{# and that doesn't work. This does:}
+\NormalTok{Dengue1 <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"Dengue1"}\NormalTok{, }\StringTok{"AC=NC_001477"}\NormalTok{)}
+\KeywordTok{attributes}\NormalTok{(Dengue1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $names
+## [1] "call"     "name"     "nelem"    "typelist" "req"      "socket"  
+## 
+## $class
+## [1] "qaw"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# to get an objects attributes add $attribute to the object}
+\NormalTok{Dengue1}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# to get accession #}
+\NormalTok{Dengue1}\OperatorTok{$}\NormalTok{req}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [[1]]
+##        name      length       frame      ncbicg 
+## "NC_001477"     "10735"         "0"         "1"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# get names, class}
+\KeywordTok{attr}\NormalTok{(Dengue1, }\StringTok{"names"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "call"     "name"     "nelem"    "typelist" "req"      "socket"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{attr}\NormalTok{(Dengue1, }\StringTok{"class"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "qaw"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# this calls forth for the sequence data}
+\NormalTok{dengueseq <-}\StringTok{ }\KeywordTok{getSequence}\NormalTok{(Dengue1}\OperatorTok{$}\NormalTok{req[[}\DecValTok{1}\NormalTok{]])}
+\CommentTok{# first 50 elements}
+\NormalTok{dengueseq[}\DecValTok{1}\OperatorTok{:}\DecValTok{50}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "a" "g" "t" "t" "g" "t" "t" "a" "g" "t" "c" "t" "a" "c" "g" "t" "g"
+## [18] "g" "a" "c" "c" "g" "a" "c" "a" "a" "g" "a" "a" "c" "a" "g" "t" "t"
+## [35] "t" "c" "g" "a" "a" "t" "c" "g" "g" "a" "a" "g" "c" "t" "t" "g"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# getting annotations}
+\NormalTok{annots <-}\StringTok{ }\KeywordTok{getAnnot}\NormalTok{(Dengue1}\OperatorTok{$}\NormalTok{req[[}\DecValTok{1}\NormalTok{]])}
+\CommentTok{# getting first 20 lines of annots}
+\NormalTok{annots[}\DecValTok{1}\OperatorTok{:}\DecValTok{20}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "LOCUS       NC_001477              10735 bp ss-RNA     linear   VRL 17-NOV-2011"
+##  [2] "DEFINITION  Dengue virus 1, complete genome."                                   
+##  [3] "ACCESSION   NC_001477"                                                          
+##  [4] "VERSION     NC_001477.1  GI:9626685"                                            
+##  [5] "DBLINK      Project: 15306"                                                     
+##  [6] "KEYWORDS    ."                                                                  
+##  [7] "SOURCE      Dengue virus 1"                                                     
+##  [8] "  ORGANISM  Dengue virus 1"                                                     
+##  [9] "            Viruses; ssRNA positive-strand viruses, no DNA stage; Flaviviridae;"
+## [10] "            Flavivirus; Dengue virus group."                                    
+## [11] "REFERENCE   1  (bases 1 to 10735)"                                              
+## [12] "  AUTHORS   Puri,B., Nelson,W.M., Henchal,E.A., Hoke,C.H., Eckels,K.H.,"        
+## [13] "            Dubois,D.R., Porter,K.R. and Hayes,C.G."                            
+## [14] "  TITLE     Molecular analysis of dengue virus attenuation after serial passage"
+## [15] "            in primary dog kidney cells"                                        
+## [16] "  JOURNAL   J. Gen. Virol. 78 (PT 9), 2287-2291 (1997)"                         
+## [17] "   PUBMED   9292016"                                                            
+## [18] "REFERENCE   2  (bases 1 to 10735)"                                              
+## [19] "  AUTHORS   McKee,K.T. Jr., Bancroft,W.H., Eckels,K.H., Redfield,R.R.,"         
+## [20] "            Summers,P.L. and Russell,P.K."
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# close the database when you're done}
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# finding the sequences published in Nature 460:352-358}
+\CommentTok{# DOES NOT WORK. Page 43 (PDF 47), so i've commented it out. Error is}
+\CommentTok{# Error in query("naturepaper", "R=Nature/460/352") : invalid request:"unknown reference at (^): \textbackslash{}"R}
+\CommentTok{# Two examples of other's who've failed}
+\CommentTok{# https://www.biostars.org/p/197312/#332392}
+\CommentTok{# http://lists.r-forge.r-project.org/pipermail/seqinr-forum/2017q3/000252.html}
+\CommentTok{# ^above forum suggests the Nature paper in question might not exist ... }
+\CommentTok{# specifying we want genbank}
+\CommentTok{# choosebank("genbank")}
+\CommentTok{# search criteria for Nature}
+\CommentTok{# query('naturepaper', 'R=Nature/460/352')}
+\CommentTok{# naturepaper$nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# trying my version ... }
+\CommentTok{# couldn't get it to work, so I've commented it out}
+\CommentTok{# even the query help page example of 'JMB/13/5432' doesn't work!}
+\CommentTok{# naturepaper <- query('naturepaper', 'R=JMB/13/5432')}
+\CommentTok{# I get this error message with this normal seeming request}
+\CommentTok{# Error in query("naturepaper", "j=Nature", "Y=2006") : argument socket = Y=2006 }
+\CommentTok{# is not a socket connection.}
+\CommentTok{# naturepaper <- query('naturepaper', 'j=Nature', 'Y=2006')}
+\CommentTok{# naturepaper$nelem}
+
+\CommentTok{# I've repliacted the functional Dengue1 code from above}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"refseqViruses"}\NormalTok{)}
+\NormalTok{dengue_attempt <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"Dengue1"}\NormalTok{, }\StringTok{'AC=NC_001477'}\NormalTok{)}
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# the suggested code from page 44 (PDF 48) doesn't work either. Error:}
+\CommentTok{# Error in getSequence(humtRNAs) : object 'humtRNAs' not found}
+\CommentTok{# I'm growing tired of all this dysfunctional code. The Rosalind.info}
+\CommentTok{# site may be a better usage of my time than fumbling through this mess}
+\CommentTok{# choosebank("genbank")}
+\CommentTok{# query("humtRNAs", "SP=homo sapiens AND M=TRNA")}
+\CommentTok{# myseqs <- getSequence(humtRNAs)}
+\CommentTok{# mynames <- getName(humtRNAs)}
+\CommentTok{# write.fasta(myseqs, mynames, file.out="humantRNAs.fasta")}
+\CommentTok{# closebank()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q1 What information about the rabies virus sequence (NCBI
+accession NC\_001542) can you obtain from its annotations in the NCBI
+Sequence
+Database?}\label{q1-what-information-about-the-rabies-virus-sequence-ncbi-accession-nc_001542-can-you-obtain-from-its-annotations-in-the-ncbi-sequence-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# go to http://www.ncbi.nlm.nih.gov/}
+\CommentTok{# use accession 'NC_001542' to find the rabies virus. }
+\CommentTok{# since it's a virus, it'll be in 'refseqViruses'. Use the query format to grab it.}
+\CommentTok{# load the required package}
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)   }
+\CommentTok{# select the virus database}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"refseqViruses"}\NormalTok{)}
+\CommentTok{# specify the query}
+\NormalTok{rabies <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"rabies"}\NormalTok{, }\StringTok{"AC=NC_001542"}\NormalTok{)}
+\CommentTok{# retrieve the annotations}
+\NormalTok{annots <-}\StringTok{ }\KeywordTok{getAnnot}\NormalTok{(rabies}\OperatorTok{$}\NormalTok{req[[}\DecValTok{1}\NormalTok{]])}
+\NormalTok{annots[}\DecValTok{1}\OperatorTok{:}\DecValTok{20}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "LOCUS       NC_001542              11932 bp ss-RNA     linear   VRL 08-DEC-2008"
+##  [2] "DEFINITION  Rabies virus, complete genome."                                     
+##  [3] "ACCESSION   NC_001542"                                                          
+##  [4] "VERSION     NC_001542.1  GI:9627197"                                            
+##  [5] "DBLINK      Project: 15144"                                                     
+##  [6] "KEYWORDS    ."                                                                  
+##  [7] "SOURCE      Rabies virus"                                                       
+##  [8] "  ORGANISM  Rabies virus"                                                       
+##  [9] "            Viruses; ssRNA negative-strand viruses; Mononegavirales;"           
+## [10] "            Rhabdoviridae; Lyssavirus."                                         
+## [11] "REFERENCE   1  (bases 5388 to 11932)"                                           
+## [12] "  AUTHORS   Tordo,N., Poch,O., Ermine,A., Keith,G. and Rougeon,F."              
+## [13] "  TITLE     Completion of the rabies virus genome sequence determination:"      
+## [14] "            highly conserved domains among the L (polymerase) proteins of"      
+## [15] "            unsegmented negative-strand RNA viruses"                            
+## [16] "  JOURNAL   Virology 165 (2), 565-576 (1988)"                                   
+## [17] "   PUBMED   3407152"                                                            
+## [18] "REFERENCE   2  (bases 1 to 5500)"                                               
+## [19] "  AUTHORS   Tordo,N., Poch,O., Ermine,A., Keith,G. and Rougeon,F."              
+## [20] "  TITLE     Walking along the rabies genome: is the large G-L intergenic region"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q2 How many nucleotide sequences are there from the bacterium
+Chlamydia trachomatis in the NCBI Sequence
+Database?}\label{q2-how-many-nucleotide-sequences-are-there-from-the-bacterium-chlamydia-trachomatis-in-the-ncbi-sequence-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\CommentTok{# selecting genbank for the searching}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"genbank"}\NormalTok{)}
+\NormalTok{Ctrachomatis <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"Ctrachomatis"}\NormalTok{, }\StringTok{"SP=Chlamydia trachomatis"}\NormalTok{)}
+\NormalTok{Ctrachomatis}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 42805
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q3 How many nucleotide sequences are there from the bacterium
+Chlamydia trachomatis in the RefSeq part of the NCBI Sequence
+Database?}\label{q3-how-many-nucleotide-sequences-are-there-from-the-bacterium-chlamydia-trachomatis-in-the-refseq-part-of-the-ncbi-sequence-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\CommentTok{# looking in refseq}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"refseq"}\NormalTok{)}
+\NormalTok{Ctrachomatis2 <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"Ctrachomatis2"}\NormalTok{, }\StringTok{"SP=Chlamydia trachomatis"}\NormalTok{)}
+\NormalTok{Ctrachomatis2}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 5
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\CommentTok{# looking in bacterial}
+\CommentTok{# NVM, it's off for maintenance ... commenting out}
+\CommentTok{# choosebank("bacterial")}
+\CommentTok{# Ctrachomatis2 <- query("Ctrachomatis2", "SP=Chlamydia trachomatis")}
+\CommentTok{# Ctrachomatis2$nelem}
+\CommentTok{# closebank()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q4 How many nucleotide sequences were submitted to NCBI by
+Matthew
+Berriman?}\label{q4-how-many-nucleotide-sequences-were-submitted-to-ncbi-by-matthew-berriman}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"genbank"}\NormalTok{)}
+\NormalTok{mberriman <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"mberriman"}\NormalTok{, }\StringTok{"AU=Berriman"}\NormalTok{)}
+\NormalTok{mberriman}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 175371
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q5 How many nucleotide sequences from the nematode worms are
+there in the RefSeq
+Database?}\label{q5-how-many-nucleotide-sequences-from-the-nematode-worms-are-there-in-the-refseq-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"refseq"}\NormalTok{)}
+\NormalTok{nematodes <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"nematodes"}\NormalTok{, }\StringTok{"SP=Nematoda"}\NormalTok{)}
+\NormalTok{nematodes}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 166364
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q6 How many nucleotide sequences for collagen genes from
+nematode worms are there in the NCBI
+Database?}\label{q6-how-many-nucleotide-sequences-for-collagen-genes-from-nematode-worms-are-there-in-the-ncbi-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"genbank"}\NormalTok{)}
+\NormalTok{collagen <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"collagen"}\NormalTok{, }\StringTok{"SP=Nematoda AND K=collagen"}\NormalTok{)}
+\NormalTok{collagen}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 81
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q7 How many mRNA sequences for collagen genes from nematode
+worms are there in the NCBI
+Database?}\label{q7-how-many-mrna-sequences-for-collagen-genes-from-nematode-worms-are-there-in-the-ncbi-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(}\StringTok{"seqinr"}\NormalTok{)}
+\KeywordTok{choosebank}\NormalTok{(}\StringTok{"genbank"}\NormalTok{)}
+\NormalTok{collagen2 <-}\StringTok{ }\KeywordTok{query}\NormalTok{(}\StringTok{"collagen2"}\NormalTok{, }\StringTok{"SP=Nematoda AND K=collagen AND M=mRNA"}\NormalTok{)}
+\NormalTok{collagen2}\OperatorTok{$}\NormalTok{nelem}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{closebank}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q8 How many protein sequences for collagen proteins from
+nematode worms are there in the NCBI
+database?}\label{q8-how-many-protein-sequences-for-collagen-proteins-from-nematode-worms-are-there-in-the-ncbi-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# need to search ncbi.nlm.nih.gov website for "Nematoda[ORGN] AND collagen"}
+\CommentTok{# result: 1 to 20 of 5563 Found 12361 nucleotide sequences. Nucleotide (5563) EST (6798)}
+\CommentTok{# there isn't an ACNUC database for this}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q9 What is the accession number for the Trypanosoma cruzi
+genome in
+NCBI?}\label{q9-what-is-the-accession-number-for-the-trypanosoma-cruzi-genome-in-ncbi}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# go to ncbi.nlm.nih.gov and search '"Trypanosoma cruzi"[ORGN]'}
+\CommentTok{# accession is NZ_AAHK00000000.1}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Q10 How many fully sequenced nematode worm species are
+represented in the NCBI Genome
+database?}\label{q10-how-many-fully-sequenced-nematode-worm-species-are-represented-in-the-ncbi-genome-database}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# ncbi Genome search term 'Nematoda[ORGN]'}
+\CommentTok{# 1 to 20 of 102}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
