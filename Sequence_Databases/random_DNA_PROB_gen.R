@@ -1,7 +1,7 @@
 random_DNA_PROB_gen <- function(n, pA, pC, pG, pT) 
 {
   # check to make sure that the sum of probabilities == 1
-  # stopifnot(sum(pA + pC + pG + pT)==1)
+  stopifnot(sum(pA + pC + pG + pT)==1)
   # create an empty character vector for the nucleotide string
   nucleotide_vector = character()
   # run the for loop from 1 until n
@@ -38,17 +38,40 @@ random_DNA_PROB_gen <- function(n, pA, pC, pG, pT)
     # print(random_nucleotide)
     nucleotide_vector[i] = random_nucleotide
   }
+  print("nucleotide vector is: ")
   print(nucleotide_vector)
+  # TEST THAT THE PROGRAM GENERATES THE RIGHT FREQUENCIES
+  # get the frequency info for the nucleotide vector that was created
+  nuc_vector_table <- table(nucleotide_vector)
+  length_nuc_vector <- length(nucleotide_vector)
+  nucleotide_vector_A_freq <- nuc_vector_table[["A"]]/length_nuc_vector
+  nucleotide_vector_C_freq <- nuc_vector_table[["C"]]/length_nuc_vector
+  nucleotide_vector_G_freq <- nuc_vector_table[["G"]]/length_nuc_vector
+  nucleotide_vector_T_freq <- nuc_vector_table[["T"]]/length_nuc_vector
+  # report the frequencies to the user
+  print("nucleotide vector A frequency is: ")
+  print(nucleotide_vector_A_freq)
+  print("nucleotide vector C frequency is: ")
+  print(nucleotide_vector_C_freq)
+  print("nucleotide vector G frequency is: ")
+  print(nucleotide_vector_G_freq)
+  print("nucleotide vector T frequency is: ")
+  print(nucleotide_vector_T_freq)
 }
+# ask the user to input the frequencies
 cat("How many nucleotides long? ")
-n <- as.integer(readLines(file("stdin"), 1))
+n <- as.numeric(readLines(file("stdin"), 1))
 cat("What is frequency of A? ")
-pA <- as.integer(readLines(file("stdin"), 1))
+pA <- as.numeric(readLines(file("stdin"), 1))
 cat("What is frequency of C? ")
-pC <- as.integer(readLines(file("stdin"), 1))
+pC <- as.numeric(readLines(file("stdin"), 1))
 cat("What is frequency of G? ")
-pG <- as.integer(readLines(file("stdin"), 1))
+pG <- as.numeric(readLines(file("stdin"), 1))
 cat("What is frequency of T? ")
-pT <- as.integer(readLines(file("stdin"), 1))
+pT <- as.numeric(readLines(file("stdin"), 1))
+# close al the read line connections from above
+closeAllConnections()
+# call the function
 random_DNA_PROB_gen(n, pA, pC, pG, pT)
+# test the function
 # random_DNA_PROB_gen(20, 0.28, 0.21, 0.22, 0.29)
