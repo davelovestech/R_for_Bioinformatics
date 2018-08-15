@@ -191,19 +191,106 @@ closebank()
 # REVISION EXERCISES 1
 # Q1. What is the length of (total number of base-pairs in) the Schistosoma mansoni mitochondrial genome (NCBI accession NC_002545), and how many As, Cs, Gs and Ts does it contain?
 ```{r}
-
+# search ncbi.nlm.nih.gov for "NC_002545"
+# send to file FASTA
+# read.fasta requires the seqinr library
+library("seqinr")
+smansoni <- read.fasta(file="smansoni.fasta")
+# smansoni <- read.fasta(file="/media/david/Linux/R_for_Bioinformatics/Sequence_Databases/smansoni.fasta")
+# limit the data to only the sequence
+smansoniseq <- smansoni[[1]]
+# measure the sequence length
+length(smansoniseq)
+# count the nucleotides
+table(smansoniseq)
 ```
 # Q2. What is the length of the Brugia malayi mitochondrial genome (NCBI accession NC_004298), and how many As, Cs, Gs and Ts does it contain?
 ```{r}
-
+bmalayi <- read.fasta(file="bmalayi.fasta")
+bmalayiseq <- bmalayi[[1]]
+length(bmalayiseq)
+table(bmalayiseq)
 ```
 # Q3. What is the probability of the Brugia malayi mitochondrial genome sequence (NCBI accession NC_004298), according to a multinomial model in which the probabilities of As, Cs, Gs and Ts (pA, pC, pG, and pT) are set equal to the fraction of As, Cs, Gs and Ts in the Schistosoma mansoni mitochondrial genome?
 ```{r}
-
+# getting the counts of smansoniseq
+mytable <- table(smansoniseq)
+mytable
+mytable <- mytable/length(smansoniseq)
+# get the frequencies for different letters for smansoniseq
+freqA <- mytable[["a"]]
+freqC <- mytable[["c"]]
+freqG <- mytable[["g"]]
+freqT <- mytable[["t"]]
+# create a vector of the frequencies of a, c, g, t
+probabilities <- c(freqA, freqC, freqG, freqT)
+probabilities
 ```
+
+```{r}
+# this function calculates the probability of the sequence being in the order that it is
+# obviously, the probability will be infinitesimally small ...
+multinomialprob <- function(mysequence, probabilities)
+{
+  # these are the options for sequence letter
+  nucleotides <- c("A", "C", "G", "T")
+  # adding nucleotide letter labels for the probabilities
+  names(probabilities) <- nucleotides
+  # making the sequence uppercase
+  mysequence <- toupper(mysequence)
+  # get the length of the sequence
+  seqlength <- length(mysequence)
+  # make an empty variable to hold the probability of the sequence (as it's calculated)
+  seqprob <- numeric()
+  # cycle through each nucleotide letter of the sequence
+  for (i in 1:seqlength)
+  {
+    # store the current nucleotide
+    nucleotide <- mysequence[i]
+    # store the probability for the current nucleotide
+    nucleotideprob <- probabilities[nucleotide]
+    # for the FIRST nucleotide there isn't an ongoing proability to multiply by
+    # so it's just the probability of the current nucleotide
+    if (i == 1) { seqprob <- nucleotideprob[[1]] }
+    # for all other positions, the current nucleotide probability is multiplied by the entire sequence
+    else { seqprob <- seqprob * nucleotideprob[[1]] }
+  }
+  return(seqprob)
+}
+# call the function on the bmalyaiseq sequence
+multinomialprob(bmalayiseq, probabilities)
+```
+
 # Q4. What are the top three most frequent 4-bp words (4-mers) in the genome of the bacterium Chlamydia trachomatis strain D/UW-3/CX (NCBI accession NC_000117), and how many times do they occur in its sequence?
 ```{r}
-
+# initially, I downloaded the file from ncbi.nlm.gov
+ctrachomatis <- read.fasta(file="ctrachomatis.fasta")
+ctrachomatis
+# but I'd like more practice w/ R, so here's using query to get it
+# NEVERMIND, the bacterial database is currently offline for maintenance
+# Error message:
+# Error in acnucopen(bank, socket) : Database with name -->bacterial<-- is currently off for maintenance, please try again later.
+# commented it out
+library("seqinr")
+# choosebank("bacterial")
+# query("ctrachomatis", "AC=NC_000117")
+# getting the sequence
+# this is just if you query it (diff format)
+# ctrachomatisseq <- getSequence(ctrachomatis$req[[1]])
+# closebank()
+# getting the sequence
+ctrachomatisseq <- ctrachomatis[[1]]
+# getting 4 counts
+mytable <- count(ctrachomatisseq, 4)
+# sorting the counts (last is highest)
+sorted_mytable <- sort(mytable)
+sorted_mytable
+# length of sorted table
+length_sorted_mytable <- length(sorted_mytable)
+length_sorted_mytable
+# slicing the list with the actual numbers OR using the length and length-3
+sorted_mytable[(length_sorted_mytable-3):length_sorted_mytable]
+sorted_mytable[253:256]
 ```
 # Q5. Write an R function to generate a random DNA sequence that is n letters long (that is, n bases long) using a multinomial model in which the probabilities pA, pC, pG, and pT are set equal to the fraction of As, Cs, Gs and Ts in the Schistosoma mansoni mitochondrial genome.
 ```{r}
