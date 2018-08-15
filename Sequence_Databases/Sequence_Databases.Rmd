@@ -289,24 +289,134 @@ sorted_mytable
 length_sorted_mytable <- length(sorted_mytable)
 length_sorted_mytable
 # slicing the list with the actual numbers OR using the length and length-3
-sorted_mytable[(length_sorted_mytable-3):length_sorted_mytable]
-sorted_mytable[253:256]
+sorted_mytable[(length_sorted_mytable-2):length_sorted_mytable]
+sorted_mytable[254:256]
+typeof(ctrachomatisseq)
 ```
 # Q5. Write an R function to generate a random DNA sequence that is n letters long (that is, n bases long) using a multinomial model in which the probabilities pA, pC, pG, and pT are set equal to the fraction of As, Cs, Gs and Ts in the Schistosoma mansoni mitochondrial genome.
 ```{r}
+table_smanson <- table(smansoniseq)
+table_smanson
+length_smanson <- length(smansoniseq)
+length_smanson
+smanson_frequencies <- table_smanson/length_smanson
+A_freq <- smanson_frequencies[["a"]]
+C_freq <- smanson_frequencies[["c"]]
+G_freq <- smanson_frequencies[["g"]]
+T_freq <- smanson_frequencies[["t"]]
+smanson_probabilities <- c(A_freq, C_freq, G_freq, T_freq)
+smanson_probabilities
+nucleotides <- c("A", "C", "G", "T")
+# adding nucleotide letter labels for the probabilities
+names(smanson_probabilities) <- nucleotides
+# smanson_probabilities
 
+random_DNA_gen <- function(n) 
+{
+# calculating probabilities of smanson nucleotides
+# smanson_probabilities
+A <- smanson_probabilities[["A"]]
+C <- smanson_probabilities[["C"]]
+G <- smanson_probabilities[["G"]]
+T <- smanson_probabilities[["T"]]
+# checking the values
+# A
+# C
+# G
+# T
+# they sum to 1
+# sum(A, C, G, T)
+nucleotide_vector = character()
+n <- 5
+for (i in 1:n)
+{
+  print("random number: ")
+  random_number <- runif(1, 0, 1)
+  print(random_number)
+  print("random nucleotide: ")
+  if (random_number <= 0.253486) 
+    {
+      random_nucleotide <- "A"
+    }
+  else if (random_number <= (0.253486+0.08518904)) 
+    {
+      random_nucleotide <- "C"
+    }
+  else if (random_number <= (0.253486+0.08518904+0.2294138)) 
+    {
+      random_nucleotide <- "G"
+    }
+  else 
+    {
+      random_nucleotide <- "T"
+    }
+  # print(random_nucleotide)
+  nucleotide_vector[i] = random_nucleotide
+  }
+  print(nucleotide_vector)
+}
+
+random_DNA_gen(5)
 ```
 # Q6. Give an example of using your function from Q5 to calculate a random sequence that is 20 letters long, using a multinomial model with pA =0.28, pC =0.21, pG =0.22, and pT =0.29.
 ```{r}
+# updated function from before to take an input of nucleotide frequencies
+random_DNA_PROB_gen <- function(n, pA, pC, pG, pT) 
+{
+  # check to make sure that the sum of probabilities == 1
+  stopifnot(sum(pA + pC + pG + pT)==1)
+  # create an empty character vector for the nucleotide string
+  nucleotide_vector = character()
+  # run the for loop from 1 until n
+  for (i in 1:n)
+  {
+    # print("random number: ")
+    # generate a random number between 0 and 1
+    random_number <- runif(1, 0, 1)
+    # print(random_number)
+    # print("random nucleotide: ")
+    # probability tree of increasing sums of the nucleotide frequency
+    # this works because it starts at the lowest numbers and goes up 
+    # it wouldn't work in the opposite direction (low to high) cause everything 
+    # would sort into the lowest
+    if (random_number <= pA) 
+      {
+        random_nucleotide <- "A"
+      }
+    else if (random_number <= (pA + pC)) 
+      {
+        random_nucleotide <- "C"
+      }
+    else if (random_number <= (pA + pC + pG)) 
+      {
+        random_nucleotide <- "G"
+    }
+    # the probability sum isn't necessary here because higher is the only option
+    # this function doesn't take into account errors in user input ... future might
+    # wanna change to an else going to error and having G be assigned in an else if
+    else 
+      {
+        random_nucleotide <- "T"
+      }
+  # print(random_nucleotide)
+  nucleotide_vector[i] = random_nucleotide
+  }
+  print(nucleotide_vector)
+}
 
+random_DNA_PROB_gen(20, 0.28, 0.21, 0.22, 0.29)
 ```
 # Q7. How many protein sequences from rabies virus are there in the NCBI Protein database?
 ```{r}
-
+# ncbi.nlm.nih.gov
+# search protein database for 'rabies virus'
+# 30,211 was the # returned
 ```
 # Q8. What is the NCBI accession for the Mokola virus genome?
 ```{r}
-
+# ncbi.nlm.nih.gov
+# search genome database for 'Mokola virus'
+# NC_006429.1
 ```
 
 
