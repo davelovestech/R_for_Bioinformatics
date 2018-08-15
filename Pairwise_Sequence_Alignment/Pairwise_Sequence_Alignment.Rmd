@@ -1,0 +1,111 @@
+---
+title: "Pairwise_Sequence_Alignment"
+output: github_document
+---
+
+```{r}
+# reading in the sequences (assuming you've downloaded them)
+library("seqinr")
+# print working directory
+print(getwd())
+# read in the protein fasta files
+leprae <- read.fasta(file = "Q9CD83.fasta")
+ulcerans <- read.fasta(file = "A0PQ23.fasta")
+# get ONLY the protein sequence component of the files
+lepraeseq <- leprae[[1]]
+ulceransseq <- ulcerans[[1]]
+# print the file sequences
+lepraeseq
+ulceransseq
+```
+
+```{r}
+# getting the sequences with seqinr package
+library("seqinr")
+choosebank("swissprot")
+leprae <- query("leprae", "AC=Q9CD83")
+lepraeseq <- getSequence(leprae$req[[1]])
+ulcerans <- query("ulcerans", "AC=A0PQ23")
+ulceransseq <- getSequence(ulcerans$req[[1]])
+closebank()
+lepraeseq
+ulceransseq
+```
+
+```{r}
+# creating a dotPlot of the protein sequence overlap
+dotPlot(lepraeseq, ulceransseq)
+```
+
+```{r}
+# create a scoring matrix for proteins
+source("https://bioconductor.org/biocLite.R")
+biocLite("Biostrings")
+library(Biostrings)
+sigma <- nucleotideSubstitutionMatrix(match = 2, mismatch = -1, baseOnly = TRUE)
+sigma
+```
+
+```{r}
+# get optimal global alignment for two sequences
+s1 <- "GAATTC"
+s2 <- "GATTA"
+# obtain the optimal alignment and its score
+globalAligns1s2 <- pairwiseAlignment(s1, s2, substitutionMatrix = sigma, gapOpening = -2, 
+                                     gapExtension = -8, scoreOnly = FALSE)
+globalAligns1s2
+
+```
+
+```{r}
+# BLOSUM with high numbers are for closely related sequences, low BLOSUM is for different sequences
+# load BLOSUM50
+data(BLOSUM50)
+BLOSUM50
+```
+
+```{r}
+# print list of availale scoring matrices from the Biostrings package
+data(package="Biostrings")
+```
+
+```{r}
+# get optimal global alignment for PAWHEAE and HEAGAWGHEE
+# with Needleman-Wunsch algorithm and BLOSUM50
+s3 <- "PAWHEAE"
+s4 <- "HEAGAWGHEE"
+globalAligns3s4 <- pairwiseAlignment(s3, s4, substitutionMatrix = "BLOSUM50",
+                                     gapOpening = -2, gapExtension = -8, 
+                                     scoreOnly = FALSE)
+globalAligns3s4
+```
+
+```{r}
+# Aligning the leprae and ulcerans sequences
+# convert both character vectors to strings
+lepraeseqstring <- c2s(lepraeseq)
+ulceransseqstring <- c2s(ulceransseq)
+# convert both strings to uppercase
+lepraeseqstring <- toupper(lepraeseqstring)
+ulceransseqstring <- toupper(ulceransseqstring)
+lepraeseqstring
+ulceransseqstring
+# aligning the sequences with the pairwise align function
+globalAlignLepraeUlcerans <- pairwiseAlignment(lepraeseqstring, ulceransseqstring, 
+                                               substitutionMatrix = BLOSUM50, gapOpening = -2, 
+                                               gapExtension = -8, scoreOnly = FALSE)
+globalAlignLepraeUlcerans
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
