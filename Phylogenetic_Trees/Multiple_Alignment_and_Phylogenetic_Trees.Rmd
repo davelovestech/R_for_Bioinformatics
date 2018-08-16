@@ -1,0 +1,83 @@
+---
+title: "Multiple Alignment and Phylogenetic Trees"
+output: github_document
+---
+
+```{r}
+# this function can download multiple sequences from a specified database
+# the code provided by the book is defunct
+# see StackOverflow for the proper code: 
+# https://stackoverflow.com/questions/37856007/error-with-a-function-to-retrieve-data-from-a-database 
+retrieveseqs <- function(seqnames,acnucdb)
+{
+  # this is a list that the sequences will be stored in
+  myseqs <- list()
+  require("seqinr")
+  choosebank(acnucdb)
+  for (i in 1:length(seqnames))
+  {
+    seqname <- seqnames[i]
+    print(paste("Retrieving sequence",seqname,"..."))
+    queryname <- "query2"
+    thequery <- paste("AC=",seqname,sep="")
+    query2 <- query(queryname, thequery)
+    # create vector "seq" containing the sequence
+    seq <- getSequence(query2$req[[1]])
+    myseqs[[i]] <- seq
+  }
+  closebank()
+  return(myseqs)
+}
+```
+
+```{r}
+# retrieving protein sequences, from UniProt, for rabies virus phosphoprotein, Mokola virus 
+# phosphoprotein, Lagos bat virus phosphoprotein, and Western Caucasion bat virus phosphoprotein
+# this is the list of protein sequences to download
+seqnames <- c("P06747", "P0C569", "O56773", "Q5VKP1")
+# saving the protein sequences into a vector
+seqs <- retrieveseqs(seqnames,"swissprot")
+# it is 4 long
+length(seqs)
+# saving JUST the sequence part
+seq1 <- seqs[[1]]
+# printing out the first 20 protein letters
+seq1[1:20]
+# saving JUST the sequence part
+seq2 <-seqs[[2]]
+# printing out the first 20 protein letters
+seq1[1:20]
+
+
+```
+
+```{r}
+# recommended code from GitHub
+getncbiseq <- function(accession)
+{
+require("seqinr") # this function requires the SeqinR R package
+# first find which ACNUC database the accession is stored in:
+dbs <- c("genbank","refseq","refseqViruses","bacterial")
+numdbs <- length(dbs)
+for (i in 1:numdbs)
+{
+db <- dbs[i]
+choosebank(db)
+# check if the sequence is in ACNUC database 'db':
+resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
+
+if (!(inherits(resquery, "try-error"))) {
+  queryname <- "query2"
+  thequery <- paste("AC=", accession, sep="")
+  query2 <- query(queryname, thequery)
+  # see if a sequence was retrieved:
+  seq <- getSequence(query2$req[[1]])
+  closebank()
+  return(seq)
+}
+closebank()
+}
+print(paste("ERROR: accession",accession,"was not found"))
+}
+```
+
