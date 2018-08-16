@@ -97,15 +97,229 @@ globalAlignLepraeUlcerans <- pairwiseAlignment(lepraeseqstring, ulceransseqstrin
 globalAlignLepraeUlcerans
 ```
 
+```{r}
+# printing out the alignment in blocks
+printPairwiseAlignment <- function(alignment, chunksize=60, returnlist=FALSE)
+{
+  require(Biostrings)
+  seq1aln <- pattern(alignment) # get alignment for 1st sequence
+  seq2aln <- subject(alignment) # get alignment for second sequence
+  alnlen <- nchar(seq1aln)      # find the number of columns in the alignment
+  starts <- seq(1, alnlen, by=chunksize)
+  n <- length(starts)
+  seq1alnresidues <- 0
+  seq2alnresidues <- 0
+  for (i in 1:n) {
+    chunkseq1aln <- substring(seq1aln, starts[i], starts[i]+chunksize-1)
+    chunkseq2aln <- substring(seq2aln, starts[i], starts[i]+chunksize-1)
+    # Find the number of gaps in the first sequence
+    gaps1 <- countPattern("-",chunkseq1aln) # countpattern is from Biostrings package
+    # Find the number of gaps in the second sequence
+    gaps2 <- countPattern("-",chunkseq2aln)
+    # calculate how many residues have printed so far (from 1st sequence)
+    seq1alnresidues <- seq1alnresidues + chunksize - gaps1
+    # calculate how many residues from second sequence have printed so far
+    seq2alnresidues <- seq2alnresidues + chunksize -gaps2
+    if (returnlist == 'FALSE')
+    {
+      print(paste(chunkseq1aln,seq1alnresidues))
+      print(paste(chunkseq2aln,seq2alnresidues))
+      print(paste(' '))
+    }
+  }
+  if (returnlist == 'TRUE')
+  {
+    vector1 <- s2c(substring(seq1aln, 1, nchar(seq1aln)))
+    vector2 <- s2c(substring(seq2aln, 1, nchar(seq2aln)))
+    mylist <- list(vector1, vector2)
+    return(mylist)
+  }
+}
+printPairwiseAlignment(globalAlignLepraeUlcerans, 60)
+```
 
+```{r}
+# get best local alignment between M. leprae and M. ulcerans
+localAlignLepraeUlcerans <- pairwiseAlignment(lepraeseqstring, ulceransseqstring, 
+                                              substitutionMatrix = BLOSUM50, gapOpening = -2,
+                                              gapExtension = -8, scoreOnly = FALSE,
+                                              type="local")
+# print optimal local alignment and its score
+localAlignLepraeUlcerans
 
+```
 
+```{r}
+# generate random amino acid sequences with multinomial model
+generateSeqsWithMultinomialModel <- function(inputsequence, X)
+{
+  # change the input sequence into a vector of letters
+  require("seqinr")
+  inputsequencevector <- s2c(inputsequence)
+  # find the frequencies of letters in the input sequence
+  mylength <- length(inputsequencevector)
+  mytable <- table(inputsequencevector)
+  # find the names of the letters in the sequence
+  letters <- rownames(mytable)
+  numletters <- length(letters)
+  # make a vector to store the probabilities of letters
+  probabilities <- numeric()
+  for (i in 1:numletters)
+  {
+    letter <- letters[i]
+    count <- mytable[[i]]
+    probabilities[i] <- count/mylength
+  }
+  # make X random sequences using the multinomial model with "probabilities"
+  seqs <- numeric(X)
+  for (j in 1:X)
+  {
+    seq <- sample(letters, mylength, rep=TRUE, prob=probabilities)
+    seq <- c2s(seq)
+    seqs[j] <- seq
+  }
+  # return the vector of random sequences
+  return(seqs)
+}
+```
 
+```{r}
+# generate 1000 random sequences 7 letters with the probabilities of "PAWHEAE"
+randomseqs <- generateSeqsWithMultinomialModel('PAWHEAE', 1000)
+randomseqs[1:10] # print out the first 10 random sequences
+```
 
+```{r}
+# use Neeleman_wunsch algorithm to align the sequence 'HEAGAWGHEE' to 1st 1000 random
+# sequences
+s4 <- "HEAGAWGHEE"
+pairwiseAlignment(s4, randomseqs[1], substitutionMatrix = "BLOSUM50", gapOpening = -2,
+                  gapExtension = -8, scoreOnly = FALSE)
+```
 
+```{r}
+# if scoreOnly = TRUE, we'll only get the score
+# use Neeleman_wunsch algorithm to align the sequence 'HEAGAWGHEE' to 1st 1000 random
+# sequences
+s4 <- "HEAGAWGHEE"
+pairwiseAlignment(s4, randomseqs[1], substitutionMatrix = "BLOSUM50", gapOpening = -2,
+                  gapExtension = -8, scoreOnly = TRUE)
+```
 
+```{r}
+# create numeric with 1000 elements
+randomscores <- double(1000)
+for (i in 1:1000)
+{
+  score <- pairwiseAlignment(s4, randomseqs[i], substitutionMatrix = "BLOSUM50",
+                             gapOpening = -2, gapExtension = -8, scoreOnly = TRUE)
+  randomscores[i] <- score
+}
+```
 
+```{r}
+# create  histogram of the 1000 different random sequences
+hist(randomscores, col="red")
+```
 
+```{r}
+# use vector randomscores to get 1000 alignments, to calculate probability of 
+# getting score just as large as real alignment score for "PAWHEAE" and "HEAGAWGHEE"
+sum(randomscores >= -5)
+```
 
+# Q1. Download FASTA-format files of the Brugia malayi Vab-3 protein (UniProt accession A8PZ80) and the Loa loa Vab-3 protein (UniProt accession E1FTG0) sequences from UniProt.
+```{r}
+# NEITHER OF THESE SEQUENCES ARE AVAILABLE ANY LONGER ON UNIPROT
+# I HAVE COMMENTED OUT THIS SECTION
+# library("seqinr")
+# choosebank("swissprot")
+# query("brugia", "AC=A8PZ80")
+# brugiaseq <- getSequence(brugia$req[[1]])
+# query("loa", "AC=E1FTG0")
+# loaseq <- getSequence(l0a$req[[1]])
+# closebank()
+# I DOWNLOADED THE FILES FROM THE OLD HISTORY PAGE
 
+brugia <- read.fasta(file = "A8PZ80.txt")
+brugiaseq <- brugia[[1]]
+loa <- read.fasta(file = "E1FTG0.txt")
+loaseq <- loa[[1]]
+```
+# Q2. What is the alignment score for the optimal global alignment between the Brugia malayi Vab-3 protein and the Loa loa Vab-3 protein, when you use the BLOSUM50 scoring matrix, a gap opening penalty of -10 and a gap extension penalty of -0.5?
+```{r}
+# load the Biostrings package
+library("Biostrings")
+# load the BLOSUM50 scoring matrix
+data(BLOSUM50)
+# change character vectors into strings
+brugiaseqstring <- c2s(brugiaseq)
+loaseqstring <- c2s(loaseq)
+# change lower case strings to upper case strings
+brugiaseqstring <- toupper(brugiaseqstring)
+loaseqstring <- toupper(loaseqstring)
+# align with the requested settings
+myglobalAlign <- pairwiseAlignment(brugiaseqstring, loaseqstring, 
+                                   substitutionMatrix = "BLOSUM50",
+                                   gapOpening = -9.5, gapExtension = -0.5, 
+                                   scoreOnly = FALSE)
+myglobalAlign
+```
+# Q3. Use the printPairwiseAlignment() function to view the optimal global alignment between Brugia malayi Vab-3 protein and the Loa loa Vab-3 protein, using the BLOSUM50 scoring matrix, a gap opening penalty of -10 and a gap extension penalty of -0.5.
+```{r}
+# the proteins are very similar over their whole lengths w/ few gaps
+printPairwiseAlignment(myglobalAlign)
+```
+# Q4. What global alignment score do you get for the two Vab-3 proteins, when you use the BLOSUM62 alignment matrix, a gap opening penalty of -10 and a gap extension penalty of -0.5?
+```{r}
+data(BLOSUM62)
+myglobalAlign2 <- pairwiseAlignment(brugiaseqstring, loaseqstring, substitutionMatrix =
+                                      "BLOSUM62", gapOpening = -0.5, gapExtension = -0.5,
+                                    scoreOnly = FALSE)
+myglobalAlign2
+printPairwiseAlignment(myglobalAlign2)
+```
+# Q5. What is the statistical significance of the optimal global alignment for the Brugia malayi and Loa loa Vab-3 proteins made using the BLOSUM50 scoring matrix, with a gap opening penalty of -10 and a gap extension penalty of -0.5? 
+```{r}
+# make a vector of 1000 random sequences w/ the same length as Brugia
+# aligning each of those to the Loa loa protein and summing to find a score of 0
+# this would support the initial alignment as being statistically significant
+randomseqs <- generateSeqsWithMultinomialModel(brugiaseqstring, 1000)
+randomscores <- double(1000)
+for (i in 1:1000)
+{
+  score <- pairwiseAlignment(loaseqstring, randomseqs[i], substitutionMatrix = "BLOSUM50",
+                             gapOpening = -9.5, gapExtension = -0.5, scoreOnly = TRUE)
+  randomscores[i] <- score
+}
+sum(randomscores >= 777.5)
+```
+# Q6. What is the optimal global alignment score between the Brugia malayi Vab-6 protein and the Mycobacterium leprae chorismate lyase protein?
+```{r}
+choosebank("swissprot")
+leprae <- query("leprae", "AC=Q9CD83")
+lepraeseq <- getSequence(leprae$req[[1]])
+closebank()
+lepraeseq <- c2s(lepraeseq)
+lepraeseqstring <- toupper(lepraeseqstring)
+
+myglobalAlign3 <- pairwiseAlignment(brugiaseqstring, lepraeseqstring, substitutionMatrix = 
+                                      "BLOSUM50", gapOpening = -9.5, gapExtension = -0.5,
+                                    scoreOnly = FALSE)
+myglobalAlign3
+printPairwiseAlignment(myglobalAlign3)
+```
+
+```{r}
+randomscores <- double(1000) # create a numeric vector w/ 1000 elements
+for (i in 1:1000)
+{
+  score <- pairwiseAlignment(lepraeseqstring, randomseqs[i], substitutionMatrix = "BLOSUM50",
+                             gapOpening = -9.5, gapExtension = -0.5, scoreOnly = TRUE)
+  randomscores[i] <- score
+}
+# only 22/1000 scores are higher than th 67.5 score (0.022), which is under 0.05
+# this is near the cutoff for statistical significance
+sum(randomscores >= 67.5)
+```
 
