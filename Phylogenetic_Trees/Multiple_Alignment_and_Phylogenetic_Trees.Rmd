@@ -20,9 +20,23 @@ retrieveseqs <- function(seqnames,acnucdb)
     print(paste("Retrieving sequence",seqname,"..."))
     queryname <- "query2"
     thequery <- paste("AC=",seqname,sep="")
-    query2 <- query(queryname, thequery)
+    # I have changed this function every so slightly from it's old state (above stackoverflow)
+    # page 77 (PDF page 81) calls this function with UniProt accession E1FUV2
+    # HOWEVER, E1FUV2 IS NOT on UniProt anymore, so this function fails when it can't
+    # find it. I have saved the initial state of the program here:
+    # query2 <- query(queryname, thequery)
+    # this changed version calls query within a tryCatch statement
+    # without the try it causes this error message: 
+    # Error in query(queryname, thequery) : invalid request:
+    # "unknown accession number at (^): \"AC
+    query2 <- try(query(queryname, thequery))
     # create vector "seq" containing the sequence
-    seq <- getSequence(query2$req[[1]])
+    # also, I added a try block to this initial code ... do I really need the above try?
+    # YES, I need the above try! I copied the error message that it causes up there^
+    # seq <- getSequence(query2$req[[1]])
+    # if I leave out the following try, I get this error message:
+    # Error: $ operator is invalid for atomic vectors
+    seq <- try(getSequence(query2$req[[1]]))
     myseqs[[i]] <- seq
   }
   closebank()
@@ -267,11 +281,38 @@ cleanedvirusalntree <- unrootedNJtree(cleanedvirusaln,type="protein")
 
 ```{r}
 # retrieving sequences from UniProt
+# this was the initial seqnames:
+# seqnames <- c("Q10572","E3M2K8","Q8WS01","E1FUV2","A8NSK3","Q9VT99")
+# HOWEVER,
+# E1FUV2 was removed from UniProt on October 3, 2012. https://www.uniprot.org/uniprot/E1FUV2
+# I have removed E1FUV2 from seqnames here ... I downloaded the fasta file manually
+# ... I might add it back into the mix. Alternatively, I could use a try statement
+# in the retrieveseqs function. Yup, ^the above was gonna be a lazy option. I figured it out
+# see up top at line 11 for my fix; I used try() around the bad accessions and the function ran
+# HOWEVER, now I have two empty spots in my list of seqs ... actually, they're not empty
+# they're filled with the error code.
 seqnames <- c("Q10572","E3M2K8","Q8WS01","E1FUV2","A8NSK3","Q9VT99")
 seqs <- retrieveseqs(seqnames,"swissprot")
 write.fasta(seqs, seqnames, file="fox1.fasta")
 ```
 
+```{r}
+# the list of names is 6 long, as expected
+length(seqs)
+# the right names are there as expected
+seqnames
+# it's a list
+typeof(seqs)
+# 4 and 5 (E1FUV2 and A8NSK3) caused the accession # error
+# seqs[[1]]
+# seqs[[2]]
+# seqs[[3]]
+# E1FUV2 ... I need to manually get this
+seqs[[4]]
+# A8NSK3 ... I need to manually get this
+seqs[[5]] 
+# seqs[[6]]
+```
 
 
 
