@@ -47,37 +47,240 @@ seq1[1:20]
 seq2 <-seqs[[2]]
 # printing out the first 20 protein letters
 seq1[1:20]
-
-
 ```
 
 ```{r}
-# recommended code from GitHub
-getncbiseq <- function(accession)
-{
-require("seqinr") # this function requires the SeqinR R package
-# first find which ACNUC database the accession is stored in:
-dbs <- c("genbank","refseq","refseqViruses","bacterial")
-numdbs <- length(dbs)
-for (i in 1:numdbs)
-{
-db <- dbs[i]
-choosebank(db)
-# check if the sequence is in ACNUC database 'db':
-resquery <- try(query(".tmpquery", paste("AC=", accession)), silent = TRUE)
+# saving the list of protein reads into fasta format
+write.fasta(seqs, seqnames, file="phosphoproteins.fasta")
+```
 
-if (!(inherits(resquery, "try-error"))) {
-  queryname <- "query2"
-  thequery <- paste("AC=", accession, sep="")
-  query2 <- query(queryname, thequery)
-  # see if a sequence was retrieved:
-  seq <- getSequence(query2$req[[1]])
-  closebank()
-  return(seq)
-}
-closebank()
-}
-print(paste("ERROR: accession",accession,"was not found"))
+```{r}
+# completed a sequence alignment with the clustal program (see pg 66 of little book of r 
+# for bioinformatics)
+# reading in the aligned sequences
+virusaln <- read.alignment(file = "phosphoproteins.phy", format = "phylip")
+# the alignments are very long, so only part of them is shown
+virusaln$seq
+```
+
+```{r}
+# This function will print out the alignment over multiple lines
+printMultipleAlignment <- function(alignment, chunksize=60)
+{
+  # this function requires the Biostrings package
+  require("Biostrings")
+  # find the number of sequences in the alignment
+  numseqs <- alignment$nb
+  # find the length of the alignment
+  alignmentlen <- nchar(alignment$seq[[1]])
+  starts <- seq(1, alignmentlen, by=chunksize)
+  n <- length(starts)
+  # get the alignment for each of the sequences:
+  aln <- vector()
+  lettersprinted <- vector()
+  for (j in 1:numseqs)
+  {
+    alignmentj <- alignment$seq[[j]]
+    aln[j] <- alignmentj
+    lettersprinted[j] <- 0
+  }
+  # print out the alignment in blocks of 'chunksize' columns:
+  for (i in 1:n) 
+  {
+    for (j in 1:numseqs)
+    {
+      alnj <- aln[j]
+      chunkseqjaln <- substring(alnj, starts[i], starts[i]+chunksize-1)
+      chunkseqjaln <- toupper(chunkseqjaln)
+      # Find out how many gaps there are in chunkseqjaln:
+      # countPattern() is from Biostrings package
+      gapsj <- countPattern("-",chunkseqjaln) 
+      # Calculate how many residues of the first sequence we have
+      # printed so far in the alignment:
+      lettersprinted[j] <- lettersprinted[j] + chunksize - gapsj
+      print(paste(chunkseqjaln,lettersprinted[j]))
+    }
+    print(paste(' '))
+  }
 }
 ```
+
+```{r}
+# print out the multiple alignment of virus phosphoproteins in 60 column blocks
+printMultipleAlignment(virusaln, 60)
+```
+
+```{r}
+# it's important to discard areas that are not homologous
+cleanAlignment <- function(alignment, minpcnongap, minpcid)
+{
+  # make a copy of the alignment to store the new alignment in:
+  newalignment <- alignment
+  # find the number of sequences in the alignment
+  numseqs <- alignment$nb
+  # empty the alignment in "newalignment")
+  for (j in 1:numseqs) { newalignment$seq[[j]] <- "" }
+  # find the length of the alignment
+  alignmentlen <- nchar(alignment$seq[[1]])
+  # look at each column of the alignment in turn:
+  for (i in 1:alignmentlen)
+  {
+    # see what percent of the letters in this column are non-gaps:
+    nongap <- 0
+    for (j in 1:numseqs)
+    {
+      seqj <- alignment$seq[[j]]
+      letterij <- substr(seqj,i,i)
+      if (letterij != "-") { nongap <- nongap + 1}
+    }
+    pcnongap <- (nongap*100)/numseqs
+    # Only consider this column if at least minpcnongap % of the letters are not gaps:
+    if (pcnongap >= minpcnongap)
+      {
+        # see what percent of the pairs of letters in this column are identical:
+        numpairs <- 0; numid <- 0
+        # find the letters in all of the sequences in this column:
+        for (j in 1:(numseqs-1))
+        {
+          seqj <- alignment$seq[[j]]
+          letterij <- substr(seqj,i,i)
+          for (k in (j+1):numseqs)
+          {
+              seqk <- alignment$seq[[k]]
+              letterkj <- substr(seqk,i,i)
+              if (letterij != "-" && letterkj != "-")
+            {
+              numpairs <- numpairs + 1
+              if (letterij == letterkj) 
+            { 
+              numid <- numid + 1}
+            }
+          }
+      }
+      pcid <- (numid*100)/(numpairs)
+      # Only consider this column if at least %minpcid of the pairs of letters are identical:
+      if (pcid >= minpcid)
+        {
+        for (j in 1:numseqs)
+        {
+          seqj <- alignment$seq[[j]]
+          letterij <- substr(seqj,i,i)
+          newalignmentj <- newalignment$seq[[j]]
+          newalignmentj <- paste(newalignmentj,letterij,sep="")
+          newalignment$seq[[j]] <- newalignmentj
+        }
+      }
+    }
+  }
+  return(newalignment)
+}
+```
+
+```{r}
+# printing out the well conserved areas
+cleanedvirusaln <- cleanAlignment(virusaln, 30, 30)
+printMultipleAlignment(cleanedvirusaln)
+```
+
+```{r}
+# calculate the distance between the alignments
+virusdist <- dist.alignment(virusaln)
+virusdist
+```
+
+```{r}
+# make a vector containing the names of the sequences
+seqnames <- c("AF049118", "AF049114", "AF049119", "AF049115")
+# Retrieve the sequences and store them in list variable "seqs"
+seqs <- retrieveseqs(seqnames,"genbank")
+# save the sequences into a fasta
+write.fasta(seqs, seqnames, file="virusmRNA.fasta")
+```
+
+```{r}
+# read the alignment into R
+virusmRNAaln <- read.alignment(file = "virusmRNA.phy", format = "phylip")
+# calculate a genetic distance matrix based on a protein sequence alignment
+
+# require the 'ape' package
+library('ape')
+# convert the alignment to DNAbin
+virusmRNAalnbin <- as.DNAbin(virusmRNAaln)
+# calculate the genetic distance matrix
+virusmRNAdist <- dist.dna(virusmRNAalnbin)
+# Print out the genetic distance matrix
+virusmRNAdist
+```
+
+```{r}
+# the unrootedNJtree() function calculates pairwise distances betwen the sequences
+# based on the alignment
+# it builds a phylogenetic tree based on those distances
+unrootedNJtree <- function(alignment,type)
+{
+  # this function requires the ape and seqinR packages:
+  require("ape")
+  require("seqinr")
+  # define a function for making a tree:
+  makemytree <- function(alignmentmat)
+  {
+    alignment <- ape::as.alignment(alignmentmat)
+    if (type == "protein")
+    {
+      mydist <- dist.alignment(alignment)
+    }
+    else if (type == "DNA")
+    {
+      alignmentbin <- as.DNAbin(alignment)
+      mydist <- dist.dna(alignmentbin)
+    }
+    mytree <- nj(mydist)
+    # get rid of spaces in tip names
+    mytree <- makeLabel(mytree, space="")
+    return(mytree)
+  }
+  # infer a tree
+  mymat <- as.matrix.alignment(alignment)
+  mytree <- makemytree(mymat)
+  # bootstrap the tree
+  myboot <- boot.phylo(mytree, mymat, makemytree)
+  # plot the tree:
+  # plot the unrooted phylogenetic tree
+  plot.phylo(mytree,type="u")
+  # plot the bootstrap values
+  nodelabels(myboot,cex=0.7)
+  # make the bootstrap values be the node labels
+  mytree$node.label <- myboot
+  return(mytree)
+}
+```
+
+```{r}
+# make a tree
+virusalntree <- unrootedNJtree(virusaln,type="protein")
+```
+
+```{r}
+# make a filtered copy of the multple alignment
+cleanedvirusalntree <- unrootedNJtree(cleanedvirusaln,type="protein")
+```
+
+```{r}
+# retrieving sequences from UniProt
+seqnames <- c("Q10572","E3M2K8","Q8WS01","E1FUV2","A8NSK3","Q9VT99")
+seqs <- retrieveseqs(seqnames,"swissprot")
+write.fasta(seqs, seqnames, file="fox1.fasta")
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
