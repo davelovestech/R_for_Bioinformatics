@@ -318,12 +318,130 @@ seqs[[5]]
 # I have manually added the proper fasta proteins to fox1.fasta7
 ```
 
+```{r}
+# see above code for the issues with E1FUV2 and A8NSK3
+# I have since manually added the missing sequences to the fox1.fasta file
+# I ran this fasta through Clustal
+fox1aln <- read.alignment(file = "fox1.phy", format = "phylip")
+```
+
+```{r}
+# building a rooted tree out of proteins
+rootedNJtree <- function(alignment, theoutgroup, type)
+{
+# load the ape and seqinR packages:
+require("ape")
+require("seqinr")
+# define a function for making a tree:
+makemytree <- function(alignmentmat, outgroup=`theoutgroup`)
+  {
+    alignment <- ape::as.alignment(alignmentmat)
+    if (type == "protein")
+    {
+      mydist <- dist.alignment(alignment)
+    }
+    else if (type == "DNA")
+    {
+      alignmentbin <- as.DNAbin(alignment)
+      mydist <- dist.dna(alignmentbin)
+    }
+    mytree <- nj(mydist)
+    mytree <- makeLabel(mytree, space="") # get rid of spaces in tip names.
+    myrootedtree <- root(mytree, outgroup, r=TRUE)
+    return(myrootedtree)
+  }
+  # infer a tree
+  mymat <- as.matrix.alignment(alignment)
+  myrootedtree <- makemytree(mymat, outgroup=theoutgroup)
+  # bootstrap the tree
+  myboot <- boot.phylo(myrootedtree, mymat, makemytree)
+  # plot the tree:
+  plot.phylo(myrootedtree, type="p") # plot the rooted phylogenetic tree
+  nodelabels(myboot,cex=0.7)
+  # plot the bootstrap values
+  mytree$node.label <- myboot
+  # make the bootstrap values be the node labels
+  return(mytree)
+}
+```
 
 
+```{r}
+fox1alntree <- rootedNJtree(fox1aln, "Q9VT99",type="protein")
+```
 
+```{r}
+virusmRNAaln <- read.alignment(file = "virusmRNA.phy", format = "phylip")
+virusmRNAalntree <- unrootedNJtree(virusmRNAaln, type="DNA")
+```
 
+```{r}
+# phylogenetic trees are typically stored in the 'Newick-format'
+write.tree(virusmRNAalntree, "virusmRNA.tre")
+```
 
+# Q1. Calculate the genetic distances between the following NS1 proteins from different Dengue virus strains: Dengue virus 1 NS1 protein (Uniprot Q9YRR4), Dengue virus 2 NS1 protein (UniProt Q9YP96), Dengue virus 3 NS1 protein (UniProt B0LSS3), and Dengue virus 4 NS1 protein (UniProt Q6TFL5). Which are the most closely related proteins, and which are the least closely related, based on the genetic distances?
+```{r}
+# calculate the genetic distances between the following NS1 proteins
+# Dengue virus 1 NS1 protein (Uniprot Q9YRR4)
+# Dengue virus 2 NS1 protein (UniProt Q9YP96)
+# Dengue virus 3 NS1 protein (UniProt B0LSS3)
+# Dengue virus 4 NS1 protein (UniProt Q6TFL5)
 
+# code to download the protein sequences
+viralseqnames <- c("Q9YRR4","Q9YP96","B0LSS3","Q6TFL5")
+viralseqs <- retrieveseqs(viralseqnames,"swissprot")
+write.fasta(viralseqs, viralseqnames, file="dengue_strains.fasta")
+```
+```{r}
+# use clustal to match the protein and save as "dengue_strains.phy"
+# I think this code will work ... I changed the variable names
+# read the alignment into R
+viralmRNAaln <- read.alignment(file = "dengue_strains.phy", format = "phylip")
+# calculate a genetic distance matrix based on a protein sequence alignment
+# calculate the genetic distance matrix
+viralmRNAdist <- dist.alignment(viralmRNAaln)
+# Print out the genetic distance matrix
+viralmRNAdist
+```
+
+# Q2. Build an unrooted phylogenetic tree of the NS1 proteins from Dengue virus 1, Dengue virus 2, Dengue virus 3 and Dengue virus 4, using the neighbour-joining algorithm. Which are the most closely related proteins, based on the tree? Based on the bootstrap values in the tree, how confident are you of this?
+```{r}
+viralmRNAtree <- unrootedNJtree(viralmRNAaln,type="protein")
+```
+
+# Q3. Build an unrooted phylogenetic tree of the NS1 proteins from Dengue viruses 1-4, based on a filtered alignment of the four proteins (keeping alignment columns in which at least 30% of letters are not gaps, and in which at least 30% of pairs of letters are identical). Does this differ from the tree based on the unfiltered alignment (in Q2)? Can you explain why?
+```{r}
+# clean up the sequence first
+cleanedviralmRNAaln <- cleanAlignment(viralmRNAaln, 30, 30)
+# build the tree w/ the cleaned up sequence
+cleanedviralmRNAalntree <- unrootedNJtree(cleanedviralmRNAaln, type="protein")
+```
+```{r}
+# lots of open gaps
+printMultipleAlignment(viralmRNAaln)
+```
+```{r}
+# the cleaned version has less gaps
+printMultipleAlignment(cleanedviralmRNAaln)
+```
+
+# Q4. Q4. Build a rooted phylogenetic tree of the Dengue NS1 proteins based on a filtered alignment, using the Zika virus protein as the outgroup. Which are the most closely related Dengue virus proteins, based on the tree? What extra information does this tree tell you, compared to the unrooted tree in Q2?
+```{r}
+# grab sequences; all, but Q327E1 are old ... still getting them though
+seqnames <- c("Q9YRR4", "Q9YP96", "B0LSS3", "Q6TFL5", "Q32ZE1")
+# retrieve the sequences are store them
+seqs <- retrieveseqs(seqnames, "swissprot")
+# write the sequences out as a fasta file
+write.fasta(seqs, seqnames, file="NS1b.fasta")
+# outside of R, run this through Clustal
+NS1baln <- read.alignment(file = "NS1b.phy", format = "phylip")
+# get rid of the unreliable parts
+cleanedNS1baln <- cleanAlignment(NS1baln, 30, 30)
+# build a rooted phylogenetic tree w/ Zika virus (Q32ZE1) as outgroup
+cleanedNS1balntree <- rootedNJtree(cleanedNS1baln, "Q32ZE1",type="protein")
+#  Q9YP96 (Dengue virus 2 NS1) and Q6TFL5 (Dengue virus 4 NS1) are grouped together
+```
 
 
 
