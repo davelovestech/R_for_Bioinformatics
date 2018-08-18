@@ -291,6 +291,7 @@ cleanedvirusalntree <- unrootedNJtree(cleanedvirusaln,type="protein")
 # see up top at line 11 for my fix; I used try() around the bad accessions and the function ran
 # HOWEVER, now I have two empty spots in my list of seqs ... actually, they're not empty
 # they're filled with the error code.
+# I also got A8NSK3. It was deleted on September 16, 2015 this entry was deleted.
 seqnames <- c("Q10572","E3M2K8","Q8WS01","E1FUV2","A8NSK3","Q9VT99")
 seqs <- retrieveseqs(seqnames,"swissprot")
 write.fasta(seqs, seqnames, file="fox1.fasta")
@@ -312,6 +313,9 @@ seqs[[4]]
 # A8NSK3 ... I need to manually get this
 seqs[[5]] 
 # seqs[[6]]
+# the I've saved the old fasta file of fox1.fasta as a new name
+# fox1_old_ERROR.fasta.
+# I have manually added the proper fasta proteins to fox1.fasta7
 ```
 
 
