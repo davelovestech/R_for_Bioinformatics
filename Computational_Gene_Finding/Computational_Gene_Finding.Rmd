@@ -1,0 +1,640 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r}
+# seqinr package tablecode function contains all of the amino acid triplets
+# and the proteins that they are translated into
+library(seqinr)
+tablecode()
+```
+
+```{r}
+# Biostrings R package contains matchPattern function that can find matching
+# DNA patterns
+library("Biostrings")
+# this syntax will search string s1 for pattern "atg"
+s1 <- "aaaatgcagtaacccatgccc"
+matchPattern("atg", s1)
+
+
+```
+
+```{r}
+# GO TO NEXT (BOOK VERSION)
+# mine doesn't work ... it misses the middle #
+# this function can find all the start and stop codons of a DNA sequence
+findPotentialStartsAndStops <- function(sequence)
+{
+  # this vector contains all potential start and stop codons
+  codons <- c("atg", "taa", "tag", "tga")
+  # loop through the codons vector
+  for (i in 1:4)
+  {
+    # current codon
+    codon <- codons[i]
+    # create list of all matches with current codon
+    occurrences <- matchPattern(codon, sequence)
+    # this line is out of date according to https://stackoverflow.com/questions/33947425/error-argument-1-is-not-a-vector
+    # It was throwing error "Error in order(...) : argument 1 is not a vector"
+    # codonpositions <- attr(occurrences,"start")
+    # the line should be
+    codonpositions <- start(occurrences)
+    # count the number of occurences in the current codon
+    numoccurrences <- length(codonpositions)
+    if (i == 1)
+    {
+      # create a copy of codon positions
+      positions <- codonpositions
+      # create vector that holds the codon type and it's # of occurrences
+      types <- rep(codon, numoccurrences)
+    }
+    else 
+    {
+      # add the vector codon positions to the end of codon positions
+      positions <- append(positions, codonpositions, after=length(positions))
+      # add the vector rep(codon, numoccurrences) to the end of the types vector
+      types <- append(types, rep(codon, numoccurrences), after=length(types))
+    }
+    # sort the vectors of positions and types in order of position in the sequence
+    indices <- order(positions)
+    positions <- positions[indices]
+    types <- types[indices]
+    # return a list of the types and thier index positions
+    mylist <-list(positions,types)
+    return(mylist)
+  }
+}
+```
+
+```{r}
+findPotentialStartsAndStops <- function(sequence)
+{
+# Define a vector with the sequences of potential start and stop codons
+codons <- c("atg", "taa", "tag", "tga")
+# Find the number of occurrences of each type of potential start or stop codon
+for (i in 1:4)
+{
+codon <- codons[i]
+# Find all occurrences of codon "codon" in sequence "sequence"
+occurrences <- matchPattern(codon, sequence)
+# Find the start positions of all occurrences of "codon" in sequence "sequence"
+# this line is out of date according to https://stackoverflow.com/questions/33947425/error-argument-1-is-not-a-vector
+# It was throwing error "Error in order(...) : argument 1 is not a vector"
+# codonpositions <- attr(occurrences,"start")
+# the line should be
+codonpositions <- start(occurrences)
+# Find the total number of potential start and stop codons in sequence "sequence"
+numoccurrences <- length(codonpositions)
+if (i == 1)
+{
+# Make a copy of vector "codonpositions" called "positions"
+positions <- codonpositions
+# Make a vector "types" containing "numoccurrences" copies of "codon"
+types <- rep(codon, numoccurrences)
+}
+else
+{
+# Add the vector "codonpositions" to the end of vector "positions":
+positions <- append(positions, codonpositions, after=length(positions))
+# Add the vector "rep(codon, numoccurrences)" to the end of vector "types":
+types <- append(types, rep(codon, numoccurrences), after=length(types))
+}
+}
+# Sort the vectors "positions" and "types" in order of position along the input sequence:
+indices <- order(positions)
+positions <- positions[indices]
+types <- types[indices]
+# Return a list variable including vectors "positions" and "types":
+mylist <- list(positions,types)
+return(mylist)
+}
+```
+
+
+```{r}
+s1 <- "aaaatgcagtaacccatgccc"
+findPotentialStartsAndStops(s1)
+```
+
+```{r}
+# now to get start and stop sequences from the dengue sequence from an earlier chapter
+dengueseq <- getncbiseq("NC_001477")
+# slice to the first 500 nucleotides
+dengueseqstart <- dengueseq[1:500]
+length(dengueseqstart)
+# looking for start and stop codons from the first 500 characters
+library("seqinr")
+dengueseqstart
+dengueseqstartstring <- c2s(dengueseqstart) # converting character vector to character string
+dengueseqstartstring
+findPotentialStartsAndStops(dengueseqstartstring)
+```
+
+```{r}
+# see above. There is a potential start codon ATG at 137, and potential stop TGA at 141
+# could 137 to 143 be a gene?
+substring(dengueseqstartstring,137,143)
+# ribosome reads in threes and this is 7 long, so no
+# the atg and tga are NOT in the same reading frame
+```
+
+```{r}
+# an open reading frame is a region of DNA that has starts and stops IN THE SAME reading frame
+plotPotentialStartsAndStops <- function(sequence)
+  {
+     # Define a vector with the sequences of potential start and stop codons
+     codons <- c("atg", "taa", "tag", "tga")
+     # Find the number of occurrences of each type of potential start or stop codon
+     for (i in 1:4)
+     {
+        codon <- codons[i]
+        # Find all occurrences of codon "codon" in sequence "sequence"
+        occurrences <- matchPattern(codon, sequence)
+        # Find the start positions of all occurrences of "codon" in sequence "sequence"
+        # this line is out of date according to https://stackoverflow.com/questions/33947425/error-argument-1-is-not-a-vector
+        # It was throwing error "Error in order(...) : argument 1 is not a vector"
+        # codonpositions <- attr(occurrences,"start")
+        # the line should be
+        codonpositions <- start(occurrences)
+        # Find the total number of potential start and stop codons in sequence "sequence"
+        numoccurrences <- length(codonpositions)
+        if (i == 1)
+        {
+           # Make a copy of vector "codonpositions" called "positions"
+           positions   <- codonpositions
+           # Make a vector "types" containing "numoccurrences" copies of "codon"
+           types       <- rep(codon, numoccurrences)
+        }
+        else
+        {
+           # Add the vector "codonpositions" to the end of vector "positions":
+           positions   <- append(positions, codonpositions, after=length(positions))
+           # Add the vector "rep(codon, numoccurrences)" to the end of vector "types":
+           types       <- append(types, rep(codon, numoccurrences), after=length(types))
+        }
+     }
+     # Sort the vectors "positions" and "types" in order of position along the input sequence:
+     indices <- order(positions)
+     positions <- positions[indices]
+     types <- types[indices]
+     # Make a plot showing the positions of the start and stop codons in the input sequence:
+     # Draw a line at y=0 from 1 to the length of the sequence:
+     x  <- c(1,nchar(sequence))
+     y <- c(0,0)
+     plot(x, y, ylim=c(0,3), type="l", axes=FALSE, xlab="Nucleotide", ylab="Reading frame",
+        main="Predicted start (red) and stop (blue) codons")
+     segments(1,1,nchar(sequence),1)
+     segments(1,2,nchar(sequence),2)
+     # Add the x-axis at y=0:
+     axis(1, pos=0)
+     # Add the y-axis labels:
+     text(0.9,0.5,"+1")
+     text(0.9,1.5,"+2")
+     text(0.9,2.5,"+3")
+     # Draw in each predicted start/stop codon:
+     numcodons <- length(positions)
+     for (i in 1:numcodons)
+     {
+        position <- positions[i]
+        type <- types[i]
+        remainder <- (position-1) %% 3
+        if    (remainder == 0) # +1 reading frame
+        {
+           if (type == "atg") { segments(position,0,position,1,lwd=1,col="red") }
+           else               { segments(position,0,position,1,lwd=1,col="blue")}
+        }
+        else if (remainder == 1)
+        {
+           if (type == "atg") { segments(position,1,position,2,lwd=1,col="red") }
+           else               { segments(position,1,position,2,lwd=1,col="blue")}
+        }
+        else if (remainder == 2)
+        {
+           if (type == "atg") { segments(position,2,position,3,lwd=1,col="red") }
+           else               { segments(position,2,position,3,lwd=1,col="blue")}
+        }
+     }
+   }
+```
+
+```{r}
+# +3 reading position has red line (start codon) at 318 and blue line (stop codon) at 371
+# 318 - 371 could be a gene w/ +3 reading frame
+plotPotentialStartsAndStops(dengueseqstartstring)
+```
+
+```{r}
+# this function finds ORFs
+findORFsinSeq <- function(sequence)
+  {
+     require(Biostrings)
+     # Make vectors "positions" and "types" containing information on the positions of ATGs in the sequence:
+     mylist <- findPotentialStartsAndStops(sequence)
+     positions <- mylist[[1]]
+     types <- mylist[[2]]
+     # Make vectors "orfstarts" and "orfstops" to store the predicted start and stop codons of ORFs
+     orfstarts <- numeric()
+     orfstops <- numeric()
+     # Make a vector "orflengths" to store the lengths of the ORFs
+     orflengths <- numeric()
+     # Print out the positions of ORFs in the sequence:
+     # Find the length of vector "positions"
+     numpositions <- length(positions)
+     # There must be at least one start codon and one stop codon to have an ORF.
+     if (numpositions >= 2)
+     {
+        for (i in 1:(numpositions-1))
+        {
+           posi <- positions[i]
+           typei <- types[i]
+           found <- 0
+           while (found == 0)
+           {
+              for (j in (i+1):numpositions)
+              {
+                 posj  <- positions[j]
+                 typej <- types[j]
+                 posdiff <- posj - posi
+                 posdiffmod3 <- posdiff %% 3
+                 # Add in the length of the stop codon
+                 orflength <- posj - posi + 3
+                 if (typei == "atg" && (typej == "taa" || typej == "tag" || typej == "tga") && posdiffmod3 == 0)
+                 {
+                    # Check if we have already used the stop codon at posj+2 in an ORF
+                    numorfs <- length(orfstops)
+                    usedstop <- -1
+                    if (numorfs > 0)
+                    {
+                      for (k in 1:numorfs)
+                      {
+                          orfstopk <- orfstops[k]
+                          if (orfstopk == (posj + 2)) { usedstop <- 1 }
+                      }
+                    }
+                    if (usedstop == -1)
+                    {
+                       orfstarts <- append(orfstarts, posi, after=length(orfstarts))
+                       orfstops <- append(orfstops, posj+2, after=length(orfstops)) # Including the stop codon.
+                       orflengths <- append(orflengths, orflength, after=length(orflengths))
+                    }
+                    found <- 1
+                    break
+                 }
+                 if (j == numpositions) { found <- 1 }
+              }
+           }
+        }
+     }
+     # Sort the final ORFs by start position:
+     indices <- order(orfstarts)
+     orfstarts <- orfstarts[indices]
+     orfstops <- orfstops[indices]
+     # Find the lengths of the ORFs that we have
+     orflengths <- numeric()
+     numorfs <- length(orfstarts)
+     for (i in 1:numorfs)
+     {
+        orfstart <- orfstarts[i]
+        orfstop <- orfstops[i]
+        orflength <- orfstop - orfstart + 1
+        orflengths <- append(orflengths,orflength,after=length(orflengths))
+     }
+     mylist <- list(orfstarts, orfstops, orflengths)
+     return(mylist)
+  }
+```
+
+```{r}
+s1 <- "aaaatgcagtaacccatgccc"
+findORFsinSeq(s1)
+# find ORFs
+findORFsinSeq(dengueseqstartstring)
+```
+
+```{r}
+plotORFsinSeq <- function(sequence)
+  {
+     # Make vectors "positions" and "types" containing information on the positions of ATGs in the sequence:
+     mylist <- findPotentialStartsAndStops(sequence)
+     positions <- mylist[[1]]
+     types <- mylist[[2]]
+     # Make vectors "orfstarts" and "orfstops" to store the predicted start and stop codons of ORFs
+     orfstarts <- numeric()
+     orfstops <- numeric()
+     # Make a vector "orflengths" to store the lengths of the ORFs
+     orflengths <- numeric()
+     # Print out the positions of ORFs in the sequence:
+     numpositions <- length(positions) # Find the length of vector "positions"
+     # There must be at least one start codon and one stop codon to have an ORF.
+     if (numpositions >= 2)
+     {
+        for (i in 1:(numpositions-1))
+        {
+           posi <- positions[i]
+           typei <- types[i]
+           found <- 0
+           while (found == 0)
+           {
+              for (j in (i+1):numpositions)
+              {
+                 posj <- positions[j]
+                 typej <- types[j]
+                 posdiff <- posj - posi
+                 posdiffmod3 <- posdiff %% 3
+                 orflength <- posj - posi + 3 # Add in the length of the stop codon
+                 if (typei == "atg" && (typej == "taa" || typej == "tag" || typej == "tga") && posdiffmod3 == 0)
+                 {
+                    # Check if we have already used the stop codon at posj+2 in an ORF
+                    numorfs <- length(orfstops)
+                    usedstop <- -1
+                    if (numorfs > 0)
+                    {
+                       for (k in 1:numorfs)
+                       {
+                          orfstopk <- orfstops[k]
+                          if (orfstopk == (posj + 2)) { usedstop <- 1 }
+                       }
+                    }
+                    if (usedstop == -1)
+                    {
+                       orfstarts <- append(orfstarts, posi, after=length(orfstarts))
+                       orfstops <- append(orfstops, posj+2, after=length(orfstops)) # Including the stop codon.
+                       orflengths <- append(orflengths, orflength, after=length(orflengths))
+                    }
+                    found <- 1
+                    break
+                 }
+                 if (j == numpositions) { found <- 1 }
+              }
+           }
+        }
+     }
+     # Sort the final ORFs by start position:
+     indices <- order(orfstarts)
+     orfstarts <- orfstarts[indices]
+     orfstops <- orfstops[indices]
+     # Make a plot showing the positions of ORFs in the input sequence:
+     # Draw a line at y=0 from 1 to the length of the sequence:
+     x <- c(1,nchar(sequence))
+     y <- c(0,0)
+     plot(x, y, ylim=c(0,3), type="l", axes=FALSE, xlab="Nucleotide", ylab="Reading frame", main="Predicted ORFs")
+     segments(1,1,nchar(sequence),1)
+     segments(1,2,nchar(sequence),2)
+     # Add the x-axis at y=0:
+     axis(1, pos=0)
+     # Add the y-axis labels:
+     text(0.9,0.5,"+1")
+     text(0.9,1.5,"+2")
+     text(0.9,2.5,"+3")
+     # Make a plot of the ORFs in the sequence:
+     numorfs <- length(orfstarts)
+     for (i in 1:numorfs)
+     {
+        orfstart <- orfstarts[i]
+        orfstop <- orfstops[i]
+        remainder <- (orfstart-1) %% 3
+        if    (remainder == 0) # +1 reading frame
+        {
+           rect(orfstart,0,orfstop,1,col="cyan",border="black")
+        }
+        else if (remainder == 1)
+        {
+           rect(orfstart,1,orfstop,2,col="cyan",border="black")
+        }
+        else if (remainder == 2)
+        {
+           rect(orfstart,2,orfstop,3,col="cyan",border="black")
+        }
+     }
+  }
+```
+
+```{r}
+# plot ORFs in input sequence
+# two ORFs found: 1 in +3 and 1 in +1
+plotORFsinSeq(dengueseqstartstring)
+```
+
+```{r}
+# obviously interesting to look at the genetic sequence of an orf
+# you can use substring for that
+s1 <- "aaaatgcagtaacccatgccc"
+myorf <- substring(s1, 4, 12)
+myorf # Print out the sequence of "myorf"
+# convert string to character and then to protein string
+myorfvector <- s2c(myorf)
+myorfvector
+seqinr::translate(myorfvector)
+```
+
+```{r}
+# what about genes in the reverse complement direction?
+# the SeqinR function 'comp' can get complement, 
+# and rev function to go backwards
+# inputs to these functions need to be in a character vector form
+forward <- "AAAATGCTTAAACCATTGCCC"
+# convert string to character vector
+forwardvector <- s2c(forward)
+forwardvector
+# find the reverse complement strand
+reversevector <- rev(comp(forwardvector))
+reversevector
+# convert vector to a string
+reverse <- c2s(reversevector)
+reverse
+```
+
+```{r}
+# once we have found the revesrse complement, we cna run it through the findORFsinSeq function
+findORFsinSeq(reverse)
+```
+
+```{r}
+generateSeqsWithMultinomialModel <- function(inputsequence, X)
+  {
+     # Change the input sequence into a vector of letters
+     require("seqinr") # This function requires the SeqinR package.
+     inputsequencevector <- s2c(inputsequence)
+     # Find the frequencies of the letters in the input sequence "inputsequencevector":
+     mylength <- length(inputsequencevector)
+     mytable <- table(inputsequencevector)
+     # Find the names of the letters in the sequence
+     letters <- rownames(mytable)
+     numletters <- length(letters)
+     probabilities <- numeric() # Make a vector to store the probabilities of letters
+     for (i in 1:numletters)
+     {
+        letter <- letters[i]
+        count <- mytable[[i]]
+        probabilities[i] <- count/mylength
+     }
+     # Make X random sequences using the multinomial model with probabilities "probabilities"
+     seqs <- numeric(X)
+     for (j in 1:X)
+     {
+        seq <- sample(letters, mylength, rep=TRUE, prob=probabilities) # Sample with replacement
+        seq <- c2s(seq)
+        seqs[j] <- seq
+     }
+     # Return the vector of random sequences
+     return(seqs)
+  }
+```
+
+
+```{r}
+# how often do stop and start codons occur?
+myseq <- "AAAATGCTTAAACCATTGCCC"
+# generate a random sequence
+generateSeqsWithMultinomialModel(myseq, 1)
+```
+
+```{r}
+dengueseqstring <- c2s(dengueseq) # convert the dengue sequence to a character string
+mylist <- findORFsinSeq(dengueseqstring) # Find ORFs in "dengueseqstring"
+#mylist
+orflengths <- mylist[[3]] # get the +3 reading frame items
+randseqs <- generateSeqsWithMultinomialModel(dengueseqstring, 10) # generate 10 random sequences
+randseqorflengths <- numeric() # create a vector of numbers (empty)
+for (i in 1:10)
+{
+  print(i) 
+  # get the ith random sequence
+  randseq <- randseqs[i]
+  # find ORFs in random sequence
+  mylist <- findORFsinSeq(randseq)
+  # find the ORFs in randseq
+  lengths <- mylist[[3]]
+  randseqorflengths <- append(randseqorflengths, lengths, after=length(randseqorflengths))
+}
+```
+
+```{r}
+# 10 random sequences frequency of ORFs
+par(mfrow = c(1,2))
+bins <- seq(0,11000,50)
+hist(randseqorflengths, breaks=bins, col="red", xlim=c(0,1000))
+hist(orflengths, breaks=bins, col="red", xlim=c(0,1000))
+```
+
+```{r}
+# what is the longest randomly gnerated ORF?
+max(randseqorflengths)
+```
+
+```{r}
+# how many ORFs would be left in dengueseq if we used the randomly genrated ORFs as the cutoff?
+summary(orflengths > 342)
+```
+
+```{r}
+# 99 percent of ORFs in the random sequences have lengths less than 248 nucleotides long
+quantile(randseqorflengths, probs=c(0.99))
+```
+
+# Q1. How many ORFs are there on the forward strand of the DEN-1 Dengue virus genome (NCBI accession NC_001477)?
+```{r}
+# there are 116 ORFs in DEN-1
+dengueseqstring <- c2s(dengueseq)           # Convert the Dengue sequence to a string of characters
+mylist <- findORFsinSeq(dengueseqstring)    # Find ORFs in "dengueseqstring"
+orflengths <- mylist[[3]]                   # Find the lengths of ORFs in "dengueseqstring"
+length(orflengths)     
+```
+
+# Q2. What are the coordinates of the rightmost (most 3', or last) ORF in the forward strand of the DEN-1 Dengue virus genome?
+```{r}
+dengueseqstring <- c2s(dengueseq)           # Convert the Dengue sequence to a string of characters
+mylist <- findORFsinSeq(dengueseqstring)    # Find ORFs in "dengueseqstring"
+starts <- mylist[[1]]                       # Start positions of ORFs
+stops <- mylist[[2]]                        # Stop positions of ORFs
+# here are the starts
+starts
+# here are the stops
+stops
+# there are 116 of them
+length(starts)
+length(stops)
+# the last ones are 10,705 - 10,722
+starts[116]
+stops[116]
+```
+
+# Q3. What is the predicted protein sequence for the rightmost (most 3', or last) ORF in the forward strand of the DEN-1 Dengue virus genome?
+```{r}
+myorfvector <- dengueseq[10705:10722]
+seqinr::translate(myorfvector)
+```
+
+# Q4. How many ORFs are there of 30 nucleotides or longer in the forward strand of the DEN-1 Dengue virus genome sequence?
+```{r}
+# convert to a string
+dengueseqstring <- c2s(dengueseq)
+# find ORFs
+mylist <- findORFsinSeq(dengueseqstring)
+# find lengths of orfs
+orflengths <- mylist[[3]]
+# orflengths
+summary(orflengths >=30)
+```
+
+# Q5. How many ORFs longer than 248 nucleotides are there in the forward strand of the DEN-1 Dengue genome sequence?
+```{r}
+summary(orflengths >= 240)
+```
+
+# Q6. If an ORF is 248 nucleotides long, what length in amino acids will its predicted protein sequence be?
+```{r}
+# 248 -3 (-3 for stop codon) = 245
+# 245/ 3 = 
+# 248 /3 = 81.6667 ... that's 81
+```
+
+# Q7. How many ORFs are there on the forward strand of the rabies virus genome (NCBI accession NC_001542)?
+```{r}
+# there 111 on the forward strand
+rabiesseq <- getncbiseq("NC_001542")
+rabiesseqstring <- c2s(rabiesseq)
+rabieslist <- findORFsinSeq(rabiesseqstring)
+rabiesorflengths <- rabieslist[[3]]
+length(rabiesorflengths)
+```
+
+# Q8. What is the length of the longest ORF among the 99% of longest ORFs in 10 random sequences of the same lengths and composition as the rabies virus genome sequence?
+```{r}
+randseqs <- generateSeqsWithMultinomialModel(rabiesseqstring, 10) # Generate 10 random sequences using the multinomial model
+randseqorflengths <- numeric()              # Tell R that we want to make a new vector of numbers
+for (i in 1:10)
+  {
+    print(i)
+    randseq <- randseqs[i]                    # Get the ith random sequence
+    mylist <- findORFsinSeq(randseq)          # Find ORFs in "randseq"
+    lengths <- mylist[[3]]                    # Find the lengths of ORFs in "randseq"
+    randseqorflengths <- append(randseqorflengths, lengths, after=length(randseqorflengths))
+}
+# the top 99th percentile of length for an ORF was 259.83
+quantile(randseqorflengths, probs=c(0.99))
+```
+
+# Q9. How many ORFs are there in the rabies virus genome that are longer than the threshold length that you found in Q8?
+```{r}
+# there are 6 ORFs that are longer
+summary(rabiesorflengths > 254)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
